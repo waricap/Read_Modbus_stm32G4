@@ -81,6 +81,8 @@
             this.label_chart5 = new System.Windows.Forms.Label();
             this.numericUpDown_mouse = new System.Windows.Forms.NumericUpDown();
             this.label_message = new System.Windows.Forms.Label();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_mouse)).BeginInit();
             this.SuspendLayout();
@@ -120,7 +122,7 @@
             // label_out
             // 
             this.label_out.AutoSize = true;
-            this.label_out.Location = new System.Drawing.Point(550, 33);
+            this.label_out.Location = new System.Drawing.Point(634, 43);
             this.label_out.Name = "label_out";
             this.label_out.Size = new System.Drawing.Size(50, 13);
             this.label_out.TabIndex = 2;
@@ -361,7 +363,7 @@
             // 
             // button_on_gen_scan
             // 
-            this.button_on_gen_scan.Location = new System.Drawing.Point(105, 19);
+            this.button_on_gen_scan.Location = new System.Drawing.Point(729, 39);
             this.button_on_gen_scan.Name = "button_on_gen_scan";
             this.button_on_gen_scan.Size = new System.Drawing.Size(100, 23);
             this.button_on_gen_scan.TabIndex = 11;
@@ -544,7 +546,7 @@
             // 
             // button_cicle_read
             // 
-            this.button_cicle_read.Location = new System.Drawing.Point(105, 47);
+            this.button_cicle_read.Location = new System.Drawing.Point(905, 39);
             this.button_cicle_read.Name = "button_cicle_read";
             this.button_cicle_read.Size = new System.Drawing.Size(100, 23);
             this.button_cicle_read.TabIndex = 29;
@@ -637,6 +639,10 @@
             this.label_message.Size = new System.Drawing.Size(35, 13);
             this.label_message.TabIndex = 37;
             this.label_message.Text = "label1";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
             // 
             // Form1
             // 
@@ -732,6 +738,8 @@
         private System.Windows.Forms.Label label_chart5;
         private System.Windows.Forms.NumericUpDown numericUpDown_mouse;
         private System.Windows.Forms.Label label_message;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
     }
 }
 

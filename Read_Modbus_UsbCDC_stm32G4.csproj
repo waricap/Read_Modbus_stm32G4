@@ -53,6 +53,9 @@
     <Compile Include="Code_cmd_write_read.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Code_file_open_save.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Code_grafiki.cs">
       <SubType>Form</SubType>
     </Compile>

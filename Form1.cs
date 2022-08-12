@@ -22,7 +22,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
     public partial class Form1 : Form
     {
-        int data_temp =11082022;
+        int data_temp =12082022;
         public int count_list_box=0;
 
         private ListBox[] listbox_arr_data_graf = new ListBox[6];
@@ -192,5 +192,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             numeric_Up_Down_change();
         }
+
+
     }
 }
