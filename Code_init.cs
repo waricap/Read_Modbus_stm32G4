@@ -62,13 +62,20 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             for (int i = 0; i < chart1.ChartAreas.Count; i++)
             {
-                chart1.ChartAreas[i].AxisX.Maximum = 28500;
-                chart1.ChartAreas[i].AxisX.Minimum = 0;
+                chart1.Series[i].Points.Clear(); // очистка   array_data_freq
+                chart1.ChartAreas[i].AxisX.Maximum = freq_begin_band + num_point_freq_zamer;
+                chart1.ChartAreas[i].AxisX.Minimum = freq_begin_band;
                 chart1.ChartAreas[i].CursorX.IsUserEnabled = true;
                 chart1.ChartAreas[i].CursorX.LineWidth = 1;
                 chart1.ChartAreas[i].CursorX.LineColor = Color.Blue;
                 chart1.ChartAreas[i].CursorX.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dot;
             }
+            numericUpDown_mouse.Maximum = freq_begin_band + num_point_freq_zamer;
+            numericUpDown_mouse.Minimum = freq_begin_band;
+            if ((Set_Generator.Freq_start < freq_begin_band) || (Set_Generator.Freq_start > freq_begin_band + num_point_freq_zamer))
+                { numericUpDown_mouse.Value = freq_begin_band; }
+            else
+                { numericUpDown_mouse.Value = Set_Generator.Freq_start; }
         }
 
 

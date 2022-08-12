@@ -19,7 +19,6 @@ using Modbus.Device;
 /// 
 namespace Read_Modbus_UsbCDC_stm32G4
 {
-
     public partial class Form1 : Form
     {
         int data_temp =12082022;
@@ -27,7 +26,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
         private ListBox[] listbox_arr_data_graf = new ListBox[6];
         private Label[]   label_chart_mouse     = new Label[6];
-        private float[,] array_data_freq = new float[8,28500]; // столбец 7-флаг присутствия данных на этой точке
+        private static int num_point_freq_zamer = 28500;
+        private static int freq_begin_band = 14500;
+        private float[,] array_data_freq = new float[8, num_point_freq_zamer]; // столбец 7-флаг присутствия данных на этой точке
 
         struct Set_Generator_struct
         {
@@ -74,6 +75,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             init_COM_port();
 
             init_chart();// при старте - вид на полную, потом по ходу жизни - масштабировать
+            
         }
 
         private void button_read_ONE_Click(object sender, EventArgs e)
@@ -193,6 +195,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
             numeric_Up_Down_change();
         }
 
+        private void button_Save_Click(object sender, EventArgs e)
+        {
+            save_data_in_file();
+        }
 
+        private void button_open_Click(object sender, EventArgs e)
+        {
+            open_file_extract_data();
+        }
     }
 }

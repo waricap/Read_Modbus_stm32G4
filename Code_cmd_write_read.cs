@@ -40,7 +40,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
             if (status_answer == "OK")
             {
-                num_freq = Convert.ToInt32(BitConverter.ToSingle(array_read, 3)) - 14500;
+                num_freq = Convert.ToInt32(BitConverter.ToSingle(array_read, 3)) - freq_begin_band;
                 if (num_freq < 0) { num_freq = 0; }
                 if (num_freq > 28499) { num_freq = 28499; }
                 for (int i = 0; i < 6; i++)
@@ -58,8 +58,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
         }
         private byte[] Write_CmdRead_one_point_freq(UInt16 freq)
         {
-            if (freq > 43000) { freq = 43000; }
-            if (freq < 14500) { freq = 14500; }
+            if (freq > (ushort)v_43000) { freq = (ushort)v_43000; }
+            if (freq < freq_begin_band) { freq = (ushort)freq_begin_band; }
             freq = 1;
             byte Hi = Convert.ToByte(freq >> 8);
             byte Low = Convert.ToByte(freq & 0xff);
@@ -345,20 +345,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 int Fmin = int.MaxValue;
                 int Fmax=int.MinValue;
 
+            init_chart();
+
             // очистка   array_data_freq
-            for (int i = 0; i < 6; i++) 
-            { 
-                chart1.Series[i].Points.Clear(); 
-                chart1.ChartAreas[i].AxisX.Maximum = 43000;
-                chart1.ChartAreas[i].AxisX.Minimum = 14500;
-            }
-            numericUpDown_mouse.Maximum = 43000;
-            numericUpDown_mouse.Minimum = 14500;
-            for (int i = 0; i < 7; i++)
-            {
-                for (int num = 0; num < 28500; num++)
-                    { array_data_freq[i, num] = 0; }
-            }
+            Array.Clear(array_data_freq, 0, array_data_freq.Length);
 
             try
             {
@@ -383,10 +373,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                         { 
                             temp_num_freq_float = BitConverter.ToSingle(array_read, 3);
-                            if((temp_num_freq_float >=14500) & (temp_num_freq_float <=43000))
+                            if((temp_num_freq_float >= freq_begin_band) & (temp_num_freq_float <= v_43000))
                             {
                                 temp_num_freq = Convert.ToInt32(temp_num_freq_float);
-                                num_freq = temp_num_freq - 14500;
+                                num_freq = temp_num_freq - freq_begin_band;
                                 for (int i = 0; i < 6; i++)
                                 { 
                                     array_data_freq[i, num_freq] = BitConverter.ToSingle(array_read, 7 + 4 * i );
@@ -407,9 +397,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         else
                         {
                             temp_num_freq_float = BitConverter.ToSingle(array_read, 3);
-                            if ((temp_num_freq_float >= 14500) & (temp_num_freq_float <= 43000))
+                            if ((temp_num_freq_float >= freq_begin_band) & (temp_num_freq_float <= v_43000))
                             {
-                                num_freq = Convert.ToInt32(temp_num_freq_float) - 14500;
+                                num_freq = Convert.ToInt32(temp_num_freq_float) - freq_begin_band;
                             }
                             label_out.Text = " проверка CRC - ОШИБКА ";
                             answer_status_cicles = "ERROR_CRC";
@@ -424,23 +414,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 answer_status_cicles = "ERROR_TIMEOUT";
             }
             serialPort_MB.Close();
-            for (int i = 0; i < 6; i++)
-                {
-                    chart1.Series[i].Points.Clear();    
-                    chart1.ChartAreas[i].AxisX.Maximum = Fmax;
-                    chart1.ChartAreas[i].AxisX.Minimum = Fmin;
-                    listbox_arr_data_graf[i].Items.Clear();
-                    for (int num = Fmin; num < Fmax; num++)
-                    {
-                        if (array_data_freq[0, num-14500] != 0)
-                        {
-                            listbox_arr_data_graf[i].Items.Add(num.ToString() + "=" + array_data_freq[i, num - 14500].ToString() + "\n");
-                            chart1.Series[i].Points.AddXY(num, array_data_freq[i, num - 14500]);
-                        }                    
-                    } 
-                }
-            numericUpDown_mouse.Maximum = Fmax;
-            numericUpDown_mouse.Minimum = Fmin;
+            otrisovka_graf_listbox(Fmin, Fmax);
 
             return ;
         } // private string Read_register_scan_freq(ref byte[] array_read, 

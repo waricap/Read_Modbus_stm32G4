@@ -81,8 +81,10 @@
             this.label_chart5 = new System.Windows.Forms.Label();
             this.numericUpDown_mouse = new System.Windows.Forms.NumericUpDown();
             this.label_message = new System.Windows.Forms.Label();
+            this.button_Save = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.button_open = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_mouse)).BeginInit();
             this.SuspendLayout();
@@ -122,11 +124,13 @@
             // label_out
             // 
             this.label_out.AutoSize = true;
-            this.label_out.Location = new System.Drawing.Point(634, 43);
+            this.label_out.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_out.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.label_out.Location = new System.Drawing.Point(769, 37);
             this.label_out.Name = "label_out";
-            this.label_out.Size = new System.Drawing.Size(50, 13);
+            this.label_out.Size = new System.Drawing.Size(83, 29);
             this.label_out.TabIndex = 2;
-            this.label_out.Text = "label_out";
+            this.label_out.Text = "25000";
             // 
             // listBox2
             // 
@@ -363,7 +367,7 @@
             // 
             // button_on_gen_scan
             // 
-            this.button_on_gen_scan.Location = new System.Drawing.Point(729, 39);
+            this.button_on_gen_scan.Location = new System.Drawing.Point(529, 37);
             this.button_on_gen_scan.Name = "button_on_gen_scan";
             this.button_on_gen_scan.Size = new System.Drawing.Size(100, 23);
             this.button_on_gen_scan.TabIndex = 11;
@@ -514,7 +518,7 @@
             // checkBox_ON_gen
             // 
             this.checkBox_ON_gen.AutoSize = true;
-            this.checkBox_ON_gen.Location = new System.Drawing.Point(225, 43);
+            this.checkBox_ON_gen.Location = new System.Drawing.Point(242, 37);
             this.checkBox_ON_gen.Name = "checkBox_ON_gen";
             this.checkBox_ON_gen.Size = new System.Drawing.Size(66, 17);
             this.checkBox_ON_gen.TabIndex = 26;
@@ -525,7 +529,7 @@
             // checkBox_Tx_Data_cicle
             // 
             this.checkBox_Tx_Data_cicle.AutoSize = true;
-            this.checkBox_Tx_Data_cicle.Location = new System.Drawing.Point(314, 43);
+            this.checkBox_Tx_Data_cicle.Location = new System.Drawing.Point(331, 37);
             this.checkBox_Tx_Data_cicle.Name = "checkBox_Tx_Data_cicle";
             this.checkBox_Tx_Data_cicle.Size = new System.Drawing.Size(95, 17);
             this.checkBox_Tx_Data_cicle.TabIndex = 27;
@@ -536,7 +540,7 @@
             // checkBox_ON_scan
             // 
             this.checkBox_ON_scan.AutoSize = true;
-            this.checkBox_ON_scan.Location = new System.Drawing.Point(452, 43);
+            this.checkBox_ON_scan.Location = new System.Drawing.Point(452, 37);
             this.checkBox_ON_scan.Name = "checkBox_ON_scan";
             this.checkBox_ON_scan.Size = new System.Drawing.Size(71, 17);
             this.checkBox_ON_scan.TabIndex = 28;
@@ -546,7 +550,7 @@
             // 
             // button_cicle_read
             // 
-            this.button_cicle_read.Location = new System.Drawing.Point(905, 39);
+            this.button_cicle_read.Location = new System.Drawing.Point(858, 40);
             this.button_cicle_read.Name = "button_cicle_read";
             this.button_cicle_read.Size = new System.Drawing.Size(100, 23);
             this.button_cicle_read.TabIndex = 29;
@@ -634,21 +638,47 @@
             // label_message
             // 
             this.label_message.AutoSize = true;
-            this.label_message.Location = new System.Drawing.Point(550, 52);
+            this.label_message.Location = new System.Drawing.Point(241, 57);
             this.label_message.Name = "label_message";
             this.label_message.Size = new System.Drawing.Size(35, 13);
             this.label_message.TabIndex = 37;
             this.label_message.Text = "label1";
             // 
+            // button_Save
+            // 
+            this.button_Save.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button_Save.ForeColor = System.Drawing.Color.Purple;
+            this.button_Save.Location = new System.Drawing.Point(105, 45);
+            this.button_Save.Name = "button_Save";
+            this.button_Save.Size = new System.Drawing.Size(120, 23);
+            this.button_Save.TabIndex = 38;
+            this.button_Save.Text = "SaveAs...";
+            this.button_Save.UseVisualStyleBackColor = true;
+            this.button_Save.Click += new System.EventHandler(this.button_Save_Click);
+            // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // button_open
+            // 
+            this.button_open.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button_open.ForeColor = System.Drawing.Color.Blue;
+            this.button_open.Location = new System.Drawing.Point(105, 18);
+            this.button_open.Name = "button_open";
+            this.button_open.Size = new System.Drawing.Size(120, 23);
+            this.button_open.TabIndex = 39;
+            this.button_open.Text = "Open";
+            this.button_open.UseVisualStyleBackColor = true;
+            this.button_open.Click += new System.EventHandler(this.button_open_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1884, 861);
+            this.Controls.Add(this.button_open);
+            this.Controls.Add(this.button_Save);
             this.Controls.Add(this.label_message);
             this.Controls.Add(this.numericUpDown_mouse);
             this.Controls.Add(this.label_chart5);
@@ -738,8 +768,10 @@
         private System.Windows.Forms.Label label_chart5;
         private System.Windows.Forms.NumericUpDown numericUpDown_mouse;
         private System.Windows.Forms.Label label_message;
+        private System.Windows.Forms.Button button_Save;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.Button button_open;
     }
 }
 

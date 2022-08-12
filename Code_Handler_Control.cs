@@ -11,18 +11,19 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
     public partial class Form1
     {
+        int v_43000 = freq_begin_band + num_point_freq_zamer;
         private void Calculate_Fend()
         {
             label_Fend.Text = "F_end= " + (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step).ToString() +" hz";
         }
         private string Freq_TextBox(string manual_input)
         {
-            UInt16 freq_int;
+            ushort freq_int;
             try
             {
                 freq_int = Convert.ToUInt16(manual_input);
-                if (freq_int < 14500) { freq_int = 14500; }
-                if (freq_int > 43000) { freq_int = 43000; }
+                if (freq_int < freq_begin_band) { freq_int = (ushort)freq_begin_band; }
+                if (freq_int > v_43000) { freq_int = (ushort)v_43000; }
             }
             catch
             { freq_int = 25000; }
@@ -91,8 +92,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 NumPoint_int = Convert.ToUInt16(manual_input);
                 if (NumPoint_int < 0) { NumPoint_int = 0; }
                 if (NumPoint_int > 1000) { NumPoint_int = 1000; }
-                if ((Set_Generator.Freq_start + NumPoint_int * Set_Generator.F_Step) > 43000)
-                { NumPoint_int = (ushort)((43000 - Set_Generator.Freq_start) / Set_Generator.F_Step); }
+                if ((Set_Generator.Freq_start + NumPoint_int * Set_Generator.F_Step) > v_43000)
+                { NumPoint_int = (ushort)((v_43000 - Set_Generator.Freq_start) / Set_Generator.F_Step); }
             }
             catch
             { NumPoint_int = 0; }
