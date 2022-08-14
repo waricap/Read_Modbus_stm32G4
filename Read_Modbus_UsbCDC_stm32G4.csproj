@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Class_data.cs" />
     <Compile Include="Code_cmd_write_read.cs">
       <SubType>Form</SubType>
     </Compile>

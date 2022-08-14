@@ -19,6 +19,8 @@ using Modbus.Device;
 /// 
 namespace Read_Modbus_UsbCDC_stm32G4
 {
+
+    
     public partial class Form1 : Form
     {
         int data_temp =12082022;
@@ -28,22 +30,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private Label[]   label_chart_mouse     = new Label[6];
         private static int num_point_freq_zamer = 28500;
         private static int freq_begin_band = 14500;
-        private float[,] array_data_freq = new float[8, num_point_freq_zamer]; // столбец 7-флаг присутствия данных на этой точке
+        private List<Class_data> data_freq = new List<Class_data>();
+        //private float[,] array_data_freq = new float[8, num_point_freq_zamer]; // столбец 7-флаг присутствия данных на этой точке
 
-        struct Set_Generator_struct
-        {
-            //	Reg_CMD_Buf[0] - регистр флагов-команд, приходящих для исполнения
-            public bool flag_ON_generation;        //	Reg_CMD_Buf[0].0 - флаг-команда Включить Генерацию
-            public bool flag_ON_scan_freq;         //	Reg_CMD_Buf[0].1 - флаг-команда Вкл. Скольжение по диапазону, в соответствии с задаными регистрами
-            public bool flag_ON_TxData_cicle;      //	Reg_CMD_Buf[0].2 - флаг-команда Вкл. долбежку передачи данных по кругу, прием при этом прекратиться, стоповать можно будет только синей кнопкой
-            public bool flag_ON_autoTuning_freq;   //	Reg_CMD_Buf[0].3 - флаг-команда при включеной генерации автоподстройка частоты будет работать, если включен флаг скольжения, этот флаг игнорится
 
-            public UInt16 Power_proc;  //	Reg_CMD_Buf[1] - регистр мощности,  2-98% заполнения
-            public UInt16 Freq_start;  //	Reg_CMD_Buf[2] - регистр стартовой частоты, 14500-43000
-            public UInt16 F_Step;      //	Reg_CMD_Buf[3] - регистр step(1-25гц) перемещения частоты, при сканировании диапазона, при сканировании старт будет Reg_CMD_Buf[2], максимум = (Reg_CMD_Buf[2] + step*_N-количество_)
-            public UInt16 Time_Step;   //	Reg_CMD_Buf[4] - регистр время милисекунд, между степами (10-1000мс)
-            public UInt16 N_step;      //	Reg_CMD_Buf[5] - регистр N-количество степов при сканировании 0-1000
-        }
 
         private Set_Generator_struct Set_Generator = new Set_Generator_struct();
         public Form1()

@@ -33,18 +33,18 @@ namespace Read_Modbus_UsbCDC_stm32G4
             byte[] cmd_read_1 = Write_CmdRead_one_point_freq(25000);
             string message_status = "";
             byte[] array_read = new byte[255]; // 255 -это максимальный размер, по мере приема будет обрезан
+            Class_data temp_data = new Class_data();
             string status_answer = Answer_Read_Register(ref array_read, ref message_status, cmd_read_1);
             serialPort_MB.Close();
             label_out.Text = message_status;
-            int num_freq;
 
             if (status_answer == "OK")
             {
-                num_freq = Convert.ToInt32(BitConverter.ToSingle(array_read, 3)) - freq_begin_band;
-                if (num_freq < 0) { num_freq = 0; }
-                if (num_freq > 28499) { num_freq = 28499; }
-                for (int i = 0; i < 6; i++)
-                { array_data_freq[i, num_freq] = BitConverter.ToSingle(array_read, 3 + 4 * i); }
+                temp_data.Freq = Convert.ToUInt16(BitConverter.ToSingle(array_read, 3)) ;
+                for (int i = 0; i < 16; i++)
+                { temp_data.val[i] = BitConverter.ToSingle(array_read, 3 + 4 * i); }
+                temp_data.flag_yes = true;
+                data_freq.Add(new Class_data(temp_data));
             }
 
             if (array_read.Length == 0)
@@ -174,10 +174,16 @@ namespace Read_Modbus_UsbCDC_stm32G4
             Array.Resize(ref cmd_write_16, cmd_write_16.Length + 2);
             Array.Copy(data_CRC, 0, cmd_write_16, (cmd_write_16.Length - 2), data_CRC.Length);
 
-            init_COM_port();
-            if (serialPort_MB.IsOpen == false)
+            try
+            {
+                init_COM_port();
+                if (serialPort_MB.IsOpen == false)
                 { serialPort_MB.Open(); }
-            serialPort_MB.Write(cmd_write_16, 0, cmd_write_16.Length);
+                serialPort_MB.Write(cmd_write_16, 0, cmd_write_16.Length);
+            }
+            catch (Exception ex)
+            { label_out.Text = ex.Message; }
+
             return cmd_write_16;
         } // private byte[] Write_Cmd_scan_freq()
 
@@ -339,84 +345,76 @@ namespace Read_Modbus_UsbCDC_stm32G4
         public async Task Read_cicle_scan_freq(byte[] cmd_arr) // массив-команда, которая ушла по модбусу
         {
             answer_status_cicles = "OK";
-            Int32 num_freq;
-            float temp_num_freq_float;
             int old_CRC = 0;
-                int Fmin = int.MaxValue;
-                int Fmax=int.MinValue;
+            int Fmin = int.MaxValue;
+            int Fmax = int.MinValue;
 
             init_chart();
+            // очистка   
+            data_freq.Clear();
 
-            // очистка   array_data_freq
-            Array.Clear(array_data_freq, 0, array_data_freq.Length);
+            // крутимся, выход если прерван поток входной (нажата синяя кнопка )
+            int ik = 0;
+            Class_data temp_data = new Class_data();
 
-            try
+            while (ik < 2100) // крутится в этом цикле, пока не схватим концы диапазона, после этого ik=2101
             {
-                // крутимся, выход если прерван поток входной (нажата синяя кнопка )
-               //while (true)
-                int ik = 0;
-
-                int temp_num_freq = 0;
-                while (ik <2100) // крутится в этом цикле, пока не схватим концы диапазона, после этого ik=2101
+                // крутимся , поиск одной посылки
+                try
                 {
-                    // крутимся , поиск одной посылки
                     array_read = await Async_Read_one_paket(cmd_arr[0], cmd_arr[1]);
-                    // пакет 80 байт словили, теперь проверка CRC
-                    byte crc_0 = array_read[array_read.Length - 3];
-                    byte crc_1 = array_read[array_read.Length - 2];
-                    Array.Resize(ref array_read, 83);
-                    byte [] data_CRC = Modbus.Utility.ModbusUtility.CalculateCrc(array_read);
-                    Array.Resize(ref array_read, 86);
-                    if (old_CRC != (data_CRC[0] + data_CRC[1]))
+                } // try
+                catch (Exception ex)
+                {
+                    label_out.Text = ex.Message;
+                    answer_status_cicles = "ERROR_TIMEOUT";
+                    serialPort_MB.Close();
+                    ik = int.MaxValue;
+                }
+                // пакет 80 байт словили, теперь проверка CRC
+                byte crc_0 = array_read[array_read.Length - 3];
+                byte crc_1 = array_read[array_read.Length - 2];
+                Array.Resize(ref array_read, 83);
+                byte[] data_CRC = Modbus.Utility.ModbusUtility.CalculateCrc(array_read);
+                Array.Resize(ref array_read, 86);
+                if (old_CRC != (data_CRC[0] + data_CRC[1]))
+                {
+                    old_CRC = data_CRC[0] + data_CRC[1];
+                    if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                     {
-                        old_CRC = data_CRC[0] + data_CRC[1];
-                        if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
-                        { 
-                            temp_num_freq_float = BitConverter.ToSingle(array_read, 3);
-                            if((temp_num_freq_float >= freq_begin_band) & (temp_num_freq_float <= v_43000))
-                            {
-                                temp_num_freq = Convert.ToInt32(temp_num_freq_float);
-                                num_freq = temp_num_freq - freq_begin_band;
-                                for (int i = 0; i < 6; i++)
-                                { 
-                                    array_data_freq[i, num_freq] = BitConverter.ToSingle(array_read, 7 + 4 * i );
-                                    chart1.Series[i].Points.AddXY(temp_num_freq, array_data_freq[i, num_freq]);
-                                }
-                                array_data_freq[7, num_freq] = 1; // значит для этой частоты пришли данные
-                                label_out.Text = temp_num_freq_float.ToString();
-                                // надо крутится до тех пор, пока не будут схвачены концы диапазона
-                                if (temp_num_freq > Fmax) { Fmax = temp_num_freq; }
-                                if (temp_num_freq < Fmin) { Fmin = temp_num_freq; }
-                                if (((Fmax+50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
-                                        ((Fmin - 50) <= Set_Generator.Freq_start))
-                                { ik = int.MaxValue; }
-                                else
-                                { ik++; }
-                            }
-                        } // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
-                        else
+                        temp_data.Freq = (ushort)BitConverter.ToSingle(array_read, 3);
+                        for (int i = 0; i < 16; i++)
                         {
-                            temp_num_freq_float = BitConverter.ToSingle(array_read, 3);
-                            if ((temp_num_freq_float >= freq_begin_band) & (temp_num_freq_float <= v_43000))
-                            {
-                                num_freq = Convert.ToInt32(temp_num_freq_float) - freq_begin_band;
-                            }
-                            label_out.Text = " проверка CRC - ОШИБКА ";
-                            answer_status_cicles = "ERROR_CRC";
-                        }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
-                    }
-                }//while (true)
-                // this.Refresh();
-            } // try
-            catch (Exception ex)
-            { 
-                label_out.Text = ex.Message;
-                answer_status_cicles = "ERROR_TIMEOUT";
-            }
+                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i);
+                            chart1.Series[i].Points.AddXY(temp_data.Freq, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
+                        }
+                        label_out.Text = temp_data.Freq.ToString();
+                        temp_data.flag_yes = true;// значит для этой частоты пришли данные
+                        data_freq.Add(new Class_data(temp_data));
+                        // надо крутится до тех пор, пока не будут схвачены концы диапазона
+                        if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
+                        if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
+                        if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
+                                ((Fmin - 50) <= Set_Generator.Freq_start))
+                        { ik = int.MaxValue; }
+                        else
+                        { ik++; }
+                    } // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                    else
+                    {
+                        label_out.Text = " проверка CRC - ОШИБКА ";
+                        answer_status_cicles = "ERROR_CRC";
+                    }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                }
+            }//while (true)
             serialPort_MB.Close();
+            data_freq.Distinct().ToList<Class_data>();
+            data_freq.Sort();
             otrisovka_graf_listbox(Fmin, Fmax);
 
-            return ;
+
+            }
+            return;
         } // private string Read_register_scan_freq(ref byte[] array_read, 
 
     } // public partial class Form1

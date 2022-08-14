@@ -32,7 +32,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
             int koord_Y;
             for (int i = 0; i < 6; i++)
             {
-                label_chart_mouse[i].Text = array_data_freq[i, x_Coord - freq_begin_band].ToString();
+                label_chart_mouse[i].Text = data_freq.i   x_Coord ;
+
+                
                 koord_Y = chart1.Location.Y + chart1.Height * ((int)chart1.ChartAreas[i].Position.Y) / 100;
                 label_chart_mouse[i].Location = new Point(label_X, koord_Y);
                 // тут же пока все ясно, выделим строку в listbox соответствующего графика
@@ -88,23 +90,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 { chart1.ChartAreas[i].CursorX.Position = chart1.ChartAreas[index_Chart].CursorX.Position;  }
 
             int x_Coord = (int)chart1.ChartAreas[0].CursorX.Position;
-            // если на этой точке нет замера, надо перейти на следующую, искать будем ближайшую
-            if (array_data_freq[7, x_Coord - freq_begin_band] == 0) 
-            {
-                for (int i = 0; i < 100; i++)
-                {
-                    if (array_data_freq[7, x_Coord - freq_begin_band + i] > 0) // значит нашли то что надо
-                    {
-                        x_Coord += i;
-                        break;
-                    }
-                    if (array_data_freq[7, x_Coord - freq_begin_band - i] > 0) // значит нашли то что надо
-                    {
-                        x_Coord -= i;
-                        break;
-                    }
-                }
-            }
             int label_X = e.X + chart1.Location.X;
             // e.X координата мыши по шкале от 0 до chart1.Width
             // chart1.ChartAreas[0].AxisX.Maximum
@@ -127,12 +112,13 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 chart1.ChartAreas[i].AxisX.Maximum = f_max;
                 chart1.ChartAreas[i].AxisX.Minimum = f_min;
                 listbox_arr_data_graf[i].Items.Clear();
-                for (int num = f_min; num < f_max; num++)
+                data_freq.Sort();
+                foreach (Class_data df in data_freq)
                 {
-                    if (array_data_freq[7, num - freq_begin_band] != 0)
+                    if (df.flag_yes)
                     {
-                        listbox_arr_data_graf[i].Items.Add(num.ToString() + "=" + array_data_freq[i, num - freq_begin_band].ToString() + "\n");
-                        chart1.Series[i].Points.AddXY(num, array_data_freq[i, num - freq_begin_band]);
+                        listbox_arr_data_graf[i].Items.Add(df.form_one_string_ListBox(data_freq.));
+                        chart1.Series[i].Points.AddXY(df.Freq, df.val[i]);
                     }
                 }
             }
