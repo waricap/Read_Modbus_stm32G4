@@ -116,12 +116,12 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 chart1.ChartAreas[i].AxisX.Minimum = f_min;
                 listbox_arr_data_graf[i].Items.Clear();
 
-                foreach (Class_data df in data_freq)
+                for(int j = 0; j < data_freq.Length; j++)
                 {
-                    if (df.flag_yes)
+                    if (data_freq[j].flag_yes)
                     {
-                        listbox_arr_data_graf[i].Items.Add(df.form_one_string_ListBox(i));
-                        chart1.Series[i].Points.AddXY(df.Freq, df.val[i]);
+                        listbox_arr_data_graf[i].Items.Add(data_freq[j].form_one_string_ListBox(i));
+                        chart1.Series[i].Points.AddXY(data_freq[j].Freq, data_freq[j].val[i]);
                     }
                 }
             }

@@ -145,7 +145,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                             num_data_paket = 0;
                                             // вот дошли до точки, когда все таки есть надежда, что данные таки есть будут
                                             // чистим на радости массив данных, к приему новых
-                                            data_freq.Clear();
+                                            Array.Clear(data_freq, 0, data_freq.Length);// очистка
                                             break;
                                         case '1': num_data_paket = 1; break;
                                         case '2': num_data_paket = 2; break;
@@ -161,8 +161,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     } // while (read_stroka.Length >0)
                 } // using (StreamReader temp_read = new StreamReader(patch_file))
                 // поток читательный закрыт, раскидываем теперь полученые данные и разрисовываем все
-                data_freq = data_freq_full.GroupBy(i => i.Freq, (key, group) => group.First()).ToList();
-                data_freq.Sort();
                 otrisovka_graf_listbox(Fmin, Fmax);
                 numericUpDown_mouse.Value = temp_numericUpDown_Value;
             }// if (openFileDialog1.ShowDialog() == DialogResult.OK)

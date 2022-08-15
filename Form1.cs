@@ -30,12 +30,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private Label[]   label_chart_mouse     = new Label[6];
         private static int num_point_freq_zamer = 28500;
         private static int freq_begin_band = 14500;
-        private List<Class_data> data_freq = new List<Class_data>();
-        //private float[,] array_data_freq = new float[8, num_point_freq_zamer]; // столбец 7-флаг присутствия данных на этой точке
-
-
-
+        private Class_data[] data_freq = new Class_data[28500];
         private Set_Generator_struct Set_Generator = new Set_Generator_struct();
+
         public Form1()
         {
             InitializeComponent();

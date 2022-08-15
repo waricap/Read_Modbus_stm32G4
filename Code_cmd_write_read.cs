@@ -44,7 +44,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 for (int i = 0; i < 16; i++)
                 { temp_data.val[i] = BitConverter.ToSingle(array_read, 3 + 4 * i); }
                 temp_data.flag_yes = true;
-                data_freq.Add(new Class_data(temp_data));
+                data_freq[0] = temp_data;
             }
 
             if (array_read.Length == 0)
@@ -350,9 +350,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             int Fmax = int.MinValue;
 
             init_chart();
-            // очистка   
-            data_freq.Clear();
-            List<Class_data> data_freq_full = new List<Class_data>();
+            
+            Array.Clear(data_freq,0, data_freq.Length);// очистка
 
             // крутимся, выход если прерван поток входной (нажата синяя кнопка )
             int ik = 0;
@@ -392,7 +391,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         }
                         label_out.Text = temp_data.Freq.ToString();
                         temp_data.flag_yes = true;// значит для этой частоты пришли данные
-                        data_freq_full.Add(new Class_data(temp_data));
+                        data_freq[temp_data.Freq - freq_begin_band] = temp_data;
                         // надо крутится до тех пор, пока не будут схвачены концы диапазона
                         if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
                         if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
@@ -410,8 +409,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 }
             }//while (true)
             serialPort_MB.Close();
-            data_freq = data_freq_full.GroupBy(i => i.Freq, (key, group) => group.First()).ToList();
-            data_freq.Sort();
             otrisovka_graf_listbox(Fmin, Fmax);
 
             return;
