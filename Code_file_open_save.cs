@@ -16,7 +16,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
     public partial class Form1
     {
-        private string path_directory = @"C:\Users\" + Environment.UserName + @"\Documents\файлы_замеров_АЧХ";
+        private string path_directory = @"C:\Users\" + Environment.UserName + @"\source\repos\Read_Modbus_stm32G4\файлы_замеров_АЧХ";
+        //private string path_directory = @"C:\Users\" + Environment.UserName + @"\Documents\файлы_замеров_АЧХ";
         private void save_data_in_file()
         {
             string text_coment = ""; // используется для формирования поля названия графика в файле перед пакетом данных
@@ -76,14 +77,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         // заголовочная строка пакета данных графика
                         temp_write.WriteLine("#" + i.ToString() + "# value " + text_coment + i.ToString());
                         // пишем непосредственно данные
-                        for(int j = 0; j < num_point_freq_zamer; j++)
-                        {
-                            if (array_data_freq[7, j] >0)
-                            { // если там есть какие  данные, скидываем. Не на каждой точке будет такая удача.
-                                temp_write.Write((j+freq_begin_band).ToString() + "\t"); // сначала значение частоты
-                                temp_write.WriteLine(array_data_freq[i, j].ToString());   // потом собственно пришедшее значение, и <ENTER>
-                            }
-                        }
+                        foreach(Class_data df in data_freq)
+                            { temp_write.Write(df.form_one_string_file()); }// если там есть какие  данные, скидываем. Не на каждой точке будет такая удача.
                     }// for(int i = 0; i < 6; i++)
                 }// using (StreamWriter temp_write = new StreamWriter(patch_file, true))
             } // if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -91,6 +86,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
         private void open_file_extract_data()
         {
+            Class_data df = new Class_data();
+            List<Class_data> data_freq_full = new List<Class_data>();
             // диалог выбора имени для файла записи
             openFileDialog1.InitialDirectory = path_directory;  // устанавливает каталог, который отображается при первом вызове окна
             openFileDialog1.DefaultExt = ".tfx"; // устанавливает расширение файла, которое добавляется по умолчанию, если пользователь ввел имя файла без расширения
@@ -126,34 +123,46 @@ namespace Read_Modbus_UsbCDC_stm32G4
                             }
                             else
                             {
-                                switch (read_stroka[1])
+                                if (read_stroka[1] == 'D')
+                                {// теперь, именно здесь,  непосредственно данные отсасываем из принятой строки
+                                    string[] array_string_data = read_stroka.Split('\t');
+                                    df.Freq = Convert.ToUInt16(array_string_data[1]);
+                                    if (Fmin > df.Freq) { Fmin = df.Freq; }
+                                    if (Fmax < df.Freq) { Fmax = df.Freq; }
+                                    for(int i = 2; i < array_string_data.Length -3; i++)
+                                    {
+                                        if (i<18)
+                                        { df.val[i-2] = (float) Convert.ToDecimal(array_string_data[i]); }
+                                    }
+                                    df.flag_yes = true;
+                                    data_freq_full.Add(new Class_data(df));
+                                }
+                                else
                                 {
-                                    case '0':
-                                        num_data_paket = 0;
-                                        // вот дошли до точки, когда все таки есть надежда, что данные таки есть будут
-                                        // чистим на радости массив данных, к приему новых
-                                        Array.Clear(array_data_freq, 0, array_data_freq.Length);
-                                        break;
-                                    case '1': num_data_paket = 1; break;
-                                    case '2': num_data_paket = 2; break;
-                                    case '3': num_data_paket = 3; break;
-                                    case '4': num_data_paket = 4; break;
-                                    case '5': num_data_paket = 5; break;
+                                    switch (read_stroka[1])
+                                    {
+                                        case '0':
+                                            num_data_paket = 0;
+                                            // вот дошли до точки, когда все таки есть надежда, что данные таки есть будут
+                                            // чистим на радости массив данных, к приему новых
+                                            data_freq.Clear();
+                                            break;
+                                        case '1': num_data_paket = 1; break;
+                                        case '2': num_data_paket = 2; break;
+                                        case '3': num_data_paket = 3; break;
+                                        case '4': num_data_paket = 4; break;
+                                        case '5': num_data_paket = 5; break;
+                                    }
                                 }
                             }
-                        }
-                        else 
-                        {// теперь, дальше,  непосредственно данные отсасываем
-                            int num = Convert.ToUInt16(read_stroka.Remove(5, read_stroka.Length -5));
-                            array_data_freq[num_data_paket, num - freq_begin_band] = float.Parse(read_stroka.Substring(6));
-                            array_data_freq[7, num- freq_begin_band] = 1; // признак данных на этой точке
-                            if (Fmin > num) { Fmin = num; }
-                            if (Fmax < num) { Fmax = num; }
-                        }
+                        } // if (read_stroka[0] == '#')
                         read_stroka = temp_read.ReadLine();// читаем следующую строку
+
                     } // while (read_stroka.Length >0)
                 } // using (StreamReader temp_read = new StreamReader(patch_file))
                 // поток читательный закрыт, раскидываем теперь полученые данные и разрисовываем все
+                data_freq = data_freq_full.GroupBy(i => i.Freq, (key, group) => group.First()).ToList();
+                data_freq.Sort();
                 otrisovka_graf_listbox(Fmin, Fmax);
                 numericUpDown_mouse.Value = temp_numericUpDown_Value;
             }// if (openFileDialog1.ShowDialog() == DialogResult.OK)

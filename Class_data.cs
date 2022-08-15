@@ -20,7 +20,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
         public UInt16 Time_Step;   //	Reg_CMD_Buf[4] - регистр время милисекунд, между степами (10-1000мс)
         public UInt16 N_step;      //	Reg_CMD_Buf[5] - регистр N-количество степов при сканировании 0-1000
     }
-    class Class_data : IComparable
+
+    class Class_data :  IComparable  
     {
         public UInt16 Fmin = 14500; // минимальная частота,  freq - не должен выходить за эти пределы
         public UInt16 Fmax = 43000; // максимальная частота,  freq - не должен выходить за эти пределы
@@ -33,8 +34,15 @@ namespace Read_Modbus_UsbCDC_stm32G4
             {  return freq; }
             set
             {
-                if (Freq < Fmin) { freq = Fmin; }
-                if  (Freq > Fmax) { freq = Fmax; }
+                if (value < Fmin) 
+                { freq = Fmin; }
+                else
+                {
+                    if  (Freq > Fmax) 
+                    { freq = Fmax; }
+                    else
+                    { freq = value; }
+                }
             }
         }
 
@@ -56,14 +64,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 { stroka_ListBox = Freq.ToString("D5") + "= " + val[num].ToString() + "\n"; }
             return stroka_ListBox;
         }
-        public string form_one_string_file(UInt16 num)
+        public string form_one_string_file()
         {
             string stroka_file = "";
-            if ((num < max_chanel_zamer) && (flag_yes == true))
+            if (flag_yes == true)
             {
                 stroka_file = "#D\t" + Freq.ToString() + "\t";
                 for (int i = 0; i < max_chanel_zamer; i++)
-                { stroka_file += val[i].ToString() + "\t"; }
+                 { stroka_file += val[i].ToString() + "\t"; }
                 stroka_file += "\n";
             }
             return stroka_file;
@@ -92,7 +100,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         public Class_data(Class_data g)
         {
             Freq = g.Freq;
-            Array.Copy(g.val, val, val.Length);
+            Array.Copy(g.val, val, g.val.Length);
             flag_yes = g.flag_yes;
         }
 

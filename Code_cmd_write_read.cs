@@ -352,6 +352,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             init_chart();
             // очистка   
             data_freq.Clear();
+            List<Class_data> data_freq_full = new List<Class_data>();
 
             // крутимся, выход если прерван поток входной (нажата синяя кнопка )
             int ik = 0;
@@ -382,15 +383,16 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     old_CRC = data_CRC[0] + data_CRC[1];
                     if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                     {
-                        temp_data.Freq = (ushort)BitConverter.ToSingle(array_read, 3);
-                        for (int i = 0; i < 16; i++)
+                        ushort t = (ushort)BitConverter.ToSingle(array_read, 3);
+                        temp_data.Freq = t;
+                        for (int i = 0; i < 6; i++)
                         {
                             temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i);
                             chart1.Series[i].Points.AddXY(temp_data.Freq, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
                         }
                         label_out.Text = temp_data.Freq.ToString();
                         temp_data.flag_yes = true;// значит для этой частоты пришли данные
-                        data_freq.Add(new Class_data(temp_data));
+                        data_freq_full.Add(new Class_data(temp_data));
                         // надо крутится до тех пор, пока не будут схвачены концы диапазона
                         if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
                         if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
@@ -408,12 +410,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 }
             }//while (true)
             serialPort_MB.Close();
-            data_freq.Distinct().ToList<Class_data>();
+            data_freq = data_freq_full.GroupBy(i => i.Freq, (key, group) => group.First()).ToList();
             data_freq.Sort();
             otrisovka_graf_listbox(Fmin, Fmax);
 
-
-            }
             return;
         } // private string Read_register_scan_freq(ref byte[] array_read, 
 
