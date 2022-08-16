@@ -350,8 +350,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             int Fmax = int.MinValue;
 
             init_chart();
-            
-            Array.Clear(data_freq,0, data_freq.Length);// очистка
+
+            data_freq.Clear();// очистка
 
             // крутимся, выход если прерван поток входной (нажата синяя кнопка )
             int ik = 0;

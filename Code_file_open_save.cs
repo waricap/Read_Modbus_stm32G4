@@ -145,7 +145,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                             num_data_paket = 0;
                                             // вот дошли до точки, когда все таки есть надежда, что данные таки есть будут
                                             // чистим на радости массив данных, к приему новых
-                                            Array.Clear(data_freq, 0, data_freq.Length);// очистка
+                                            data_freq.Clear();// очистка
                                             break;
                                         case '1': num_data_paket = 1; break;
                                         case '2': num_data_paket = 2; break;

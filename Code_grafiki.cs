@@ -46,10 +46,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
             int koord_Y; // координата по вертикали label_chart_mouse[] для каждого графика
             for (int i = 0; i < 6; i++)
             {
-                label_chart_mouse[i].Text = data_freq_point.val[i].ToString() ; //  в каждый лейбл впишем значение этого графика
+                label_chart_marker[i].Text = data_freq_point.val[i].ToString() ; //  в каждый лейбл впишем значение этого графика
                 // найти положение каждого лейбла по высоте, ну чтоб красиво было
                 koord_Y = chart1.Location.Y + chart1.Height * ((int)chart1.ChartAreas[i].Position.Y) / 100;
-                label_chart_mouse[i].Location = new Point(label_X, koord_Y);
+                label_chart_marker[i].Location = new Point(label_X, koord_Y);
                 // тут же пока все ясно, выделим строку в listbox соответствующего графика
                 string  temp_str = "";
                 for (int j = 0; j < listbox_arr_data_graf[i].Items.Count; j++)
@@ -116,7 +116,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 chart1.ChartAreas[i].AxisX.Minimum = f_min;
                 listbox_arr_data_graf[i].Items.Clear();
 
-                for(int j = 0; j < data_freq.Length; j++)
+                for(int j = 0; j < data_freq.Count; j++)
                 {
                     if (data_freq[j].flag_yes)
                     {

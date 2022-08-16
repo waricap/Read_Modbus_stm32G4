@@ -27,16 +27,16 @@ namespace Read_Modbus_UsbCDC_stm32G4
         public int count_list_box=0;
 
         private ListBox[] listbox_arr_data_graf = new ListBox[6];
-        private Label[]   label_chart_mouse     = new Label[6];
+        private Label[]   label_chart_marker     = new Label[6];
         private static int num_point_freq_zamer = 28500;
         private static int freq_begin_band = 14500;
-        private Class_data[] data_freq = new Class_data[28500];
+        private List< Class_data> data_freq = new List<Class_data>();
         private Set_Generator_struct Set_Generator = new Set_Generator_struct();
 
         public Form1()
         {
             InitializeComponent();
-
+            data_freq.Capacity = num_point_freq_zamer; // 28500
             // !!!!!  причесать
             listbox_arr_data_graf[0] = listBox1;
             listbox_arr_data_graf[1] = listBox2;
@@ -45,12 +45,12 @@ namespace Read_Modbus_UsbCDC_stm32G4
             listbox_arr_data_graf[4] = listBox5;
             listbox_arr_data_graf[5] = listBox6;
 
-            label_chart_mouse[0] = label_chart1;
-            label_chart_mouse[1] = label_chart2;
-            label_chart_mouse[2] = label_chart3;
-            label_chart_mouse[3] = label_chart4;
-            label_chart_mouse[4] = label_chart5;
-            label_chart_mouse[5] = label_chart6;
+            label_chart_marker[0] = label_chart1;
+            label_chart_marker[1] = label_chart2;
+            label_chart_marker[2] = label_chart3;
+            label_chart_marker[3] = label_chart4;
+            label_chart_marker[4] = label_chart5;
+            label_chart_marker[5] = label_chart6;
 
             // чтение портов доступных в системе
             // и сформировать listBox_ComPort - на выбор
