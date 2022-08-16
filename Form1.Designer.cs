@@ -717,7 +717,9 @@
             this.Controls.Add(this.label_out);
             this.Controls.Add(this.button_read_ONE);
             this.Controls.Add(this.listBox1);
+            this.Location = new System.Drawing.Point(10, 10);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_mouse)).EndInit();

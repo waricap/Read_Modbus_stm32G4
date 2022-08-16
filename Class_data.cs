@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -57,11 +58,12 @@ namespace Read_Modbus_UsbCDC_stm32G4
         public float[] val = new float[max_chanel_zamer]; // тут собственно и будут валяться пришедшие данные
         public bool flag_yes; // ==true значит данные по этой частоте пришли,  == false -нет
 
-        public string form_one_string_ListBox(UInt16 num)
+        public string form_one_string_ListBox(UInt16 F_num , float val_num)
         {
             string stroka_ListBox ="";
-            if ((num < max_chanel_zamer) && (flag_yes == true)) 
-                { stroka_ListBox = Freq.ToString("D5") + "= " + val[num].ToString() + "\n"; }
+            //if ((num < max_chanel_zamer) && (flag_yes == true)) 
+            //    { stroka_ListBox = Freq.ToString("D5") + "= " + val[num].ToString() + "\n"; }
+            stroka_ListBox = F_num.ToString("D5") + "= " + val_num.ToString() + "\n";
             return stroka_ListBox;
         }
         public string form_one_string_file()

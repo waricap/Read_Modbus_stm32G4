@@ -371,44 +371,61 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     serialPort_MB.Close();
                     ik = int.MaxValue;
                 }
-                // пакет 80 байт словили, теперь проверка CRC
-                byte crc_0 = array_read[array_read.Length - 3];
-                byte crc_1 = array_read[array_read.Length - 2];
-                Array.Resize(ref array_read, 83);
-                byte[] data_CRC = Modbus.Utility.ModbusUtility.CalculateCrc(array_read);
-                Array.Resize(ref array_read, 86);
-                if (old_CRC != (data_CRC[0] + data_CRC[1]))
-                {
-                    old_CRC = data_CRC[0] + data_CRC[1];
-                    if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+
+                    // пакет 80 байт словили, теперь проверка CRC
+                    byte crc_0 = array_read[array_read.Length - 3];
+                    byte crc_1 = array_read[array_read.Length - 2];
+                    Array.Resize(ref array_read, 83);
+                    byte[] data_CRC = Modbus.Utility.ModbusUtility.CalculateCrc(array_read);
+                    Array.Resize(ref array_read, 86);
+                    if (old_CRC != (data_CRC[0] + data_CRC[1]))
                     {
-                        ushort t = (ushort)BitConverter.ToSingle(array_read, 3);
-                        temp_data.Freq = t;
-                        for (int i = 0; i < 6; i++)
+                        old_CRC = data_CRC[0] + data_CRC[1];
+                        if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                         {
-                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i);
-                            chart1.Series[i].Points.AddXY(temp_data.Freq, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
-                        }
-                        label_out.Text = temp_data.Freq.ToString();
-                        temp_data.flag_yes = true;// значит для этой частоты пришли данные
-                        data_freq[temp_data.Freq - freq_begin_band] = temp_data;
-                        // надо крутится до тех пор, пока не будут схвачены концы диапазона
-                        if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
-                        if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
-                        if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
-                                ((Fmin - 50) <= Set_Generator.Freq_start))
-                        { ik = int.MaxValue; }
+                            temp_data.clear_data();
+                            ushort t = (ushort)BitConverter.ToSingle(array_read, 3);
+                            temp_data.Freq = t;
+                            for (int i = 0; i < 6; i++)
+                            {
+                                temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i);
+                                chart1.Series[i].Points.AddXY(temp_data.Freq, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
+                            }
+                            label_out.Text = temp_data.Freq.ToString();
+                            temp_data.flag_yes = true;// значит для этой частоты пришли данные
+                             data_freq.Add( new Class_data( temp_data));                         
+
+                            // надо крутится до тех пор, пока не будут схвачены концы диапазона
+                            if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
+                            if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
+                            if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
+                                    ((Fmin - 50) <= Set_Generator.Freq_start))
+                            { ik = int.MaxValue; }
+                            else
+                            { ik++; }
+                        } // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                         else
-                        { ik++; }
-                    } // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
-                    else
-                    {
-                        label_out.Text = " проверка CRC - ОШИБКА ";
-                        answer_status_cicles = "ERROR_CRC";
-                    }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
-                }
+                        {
+                            label_out.Text = " проверка CRC - ОШИБКА ";
+                            answer_status_cicles = "ERROR_CRC";
+                        }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                    }
             }//while (true)
             serialPort_MB.Close();
+            //data_freq.GroupBy(x => x.Freq).ToList();
+            data_freq.Sort(); // убрать дублирующие , отсортровать
+            ushort old_freq = 0;
+            //  data_freq.Distinct  - удаление дублирующих старым дедовским способом,  !! после сортировки
+            for (int i = 0; i < data_freq.Count; i++)
+            {
+                if (old_freq == data_freq[i].Freq)
+                {
+                    data_freq.RemoveAt(i);
+                    if (i > 0) { i--; }
+                }
+                else
+                { old_freq = data_freq[i].Freq; }
+            }
             otrisovka_graf_listbox(Fmin, Fmax);
 
             return;

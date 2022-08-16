@@ -74,8 +74,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                 text_coment = "power P_out\t";
                                 break;
                         }
-                        // заголовочная строка пакета данных графика
-                        temp_write.WriteLine("#" + i.ToString() + "# value " + text_coment + i.ToString());
                         // пишем непосредственно данные
                         foreach(Class_data df in data_freq)
                             { temp_write.Write(df.form_one_string_file()); }// если там есть какие  данные, скидываем. Не на каждой точке будет такая удача.
@@ -87,7 +85,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private void open_file_extract_data()
         {
             Class_data df = new Class_data();
-            List<Class_data> data_freq_full = new List<Class_data>();
             // диалог выбора имени для файла записи
             openFileDialog1.InitialDirectory = path_directory;  // устанавливает каталог, который отображается при первом вызове окна
             openFileDialog1.DefaultExt = ".tfx"; // устанавливает расширение файла, которое добавляется по умолчанию, если пользователь ввел имя файла без расширения
@@ -119,7 +116,13 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                 if (read_stroka.IndexOf("F_Step") > 0) { Set_Generator.F_Step = temp_ushort; }
                                 if (read_stroka.IndexOf("Time_Step") > 0) { Set_Generator.Time_Step = temp_ushort; }
                                 if (read_stroka.IndexOf("N_step") > 0) { Set_Generator.N_step = temp_ushort; }
-                                if (read_stroka.IndexOf("F_marker") > 0) { temp_numericUpDown_Value = (int)temp_ushort; }
+                                if (read_stroka.IndexOf("F_marker") > 0) 
+                                { 
+                                    temp_numericUpDown_Value = (int)temp_ushort;
+                                    // вот дошли до точки, когда все таки есть надежда, что данные таки есть будут
+                                    // чистим на радости массив данных, к приему новых
+                                    data_freq.Clear();// очистка
+                                }
                             }
                             else
                             {
@@ -135,24 +138,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                         { df.val[i-2] = (float) Convert.ToDecimal(array_string_data[i]); }
                                     }
                                     df.flag_yes = true;
-                                    data_freq_full.Add(new Class_data(df));
-                                }
-                                else
-                                {
-                                    switch (read_stroka[1])
-                                    {
-                                        case '0':
-                                            num_data_paket = 0;
-                                            // вот дошли до точки, когда все таки есть надежда, что данные таки есть будут
-                                            // чистим на радости массив данных, к приему новых
-                                            data_freq.Clear();// очистка
-                                            break;
-                                        case '1': num_data_paket = 1; break;
-                                        case '2': num_data_paket = 2; break;
-                                        case '3': num_data_paket = 3; break;
-                                        case '4': num_data_paket = 4; break;
-                                        case '5': num_data_paket = 5; break;
-                                    }
+                                    data_freq.Add(new Class_data(df));
                                 }
                             }
                         } // if (read_stroka[0] == '#')
@@ -161,6 +147,25 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     } // while (read_stroka.Length >0)
                 } // using (StreamReader temp_read = new StreamReader(patch_file))
                 // поток читательный закрыт, раскидываем теперь полученые данные и разрисовываем все
+                textBox_Fstart.Text = Set_Generator.Freq_start.ToString();
+                textBox_Power.Text = Set_Generator.Power_proc.ToString(); 
+                textBox_Step.Text = Set_Generator.F_Step.ToString(); 
+                textBox_Step.Text = Set_Generator.Time_Step.ToString(); 
+                textBox_NumPoint.Text =  Set_Generator.N_step.ToString();
+
+                data_freq.Sort(); // убрать дублирующие , отсортровать
+                ushort old_freq = 0;
+                //  data_freq.Distinct  - удаление дублирующих старым дедовским способом,  !! после сортировки
+                for (int i = 0; i < data_freq.Count; i++)
+                {
+                    if (old_freq == data_freq[i].Freq)
+                    {
+                        data_freq.RemoveAt(i);
+                        if (i > 0) { i--; }
+                    }
+                    else
+                    { old_freq = data_freq[i].Freq; }
+                }
                 otrisovka_graf_listbox(Fmin, Fmax);
                 numericUpDown_mouse.Value = temp_numericUpDown_Value;
             }// if (openFileDialog1.ShowDialog() == DialogResult.OK)

@@ -18,26 +18,35 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             ushort index_X = (ushort)numericUpDown_mouse.Value;
             Class_data data_freq_point= new Class_data(); // заданую точку частоты
-
-            for (ushort step = 0; step < 100; step++)
+            if (data_freq.Count >0)
             {
-                index_X ++;
-                foreach (Class_data df in data_freq) // находим заданую точку частоты, и значения раскидываем по графикам
+                ushort index_find = index_X;
+                for(int i = 0; i < data_freq.Count; i++)
                 {
-                    if (df.Freq == index_X)
+                    for (ushort step = 0; step < 16; step++)
                     {
-                        data_freq_point = df;
-                        step = 101;
-                        break;
-                    }
+                        if (data_freq[i].Freq == (index_X + step))
+                        {
+                            index_find = data_freq[i].Freq;
+                            i = data_freq.Count + 1;
+                            break;
+                        }
+                        else
+                        {
+                            if (data_freq[i].Freq == (index_X - step))
+                            {
+                                index_find = data_freq[i].Freq;
+                                i = data_freq.Count + 1;
+                                break;
+                            }
+                        }
+                    }// for (ushort step = 0; step < 16; step++)
                 }
+                index_X = index_find ;
+                numericUpDown_mouse.Value = index_X;
             }
-            if (index_X > numericUpDown_mouse.Maximum) 
-            { index_X = (ushort) numericUpDown_mouse.Maximum; }
-            if (index_X < numericUpDown_mouse.Minimum)
-            { index_X = (ushort)numericUpDown_mouse.Minimum; }
-            numericUpDown_mouse.Value = index_X; 
-            
+ 
+
             for (int i = 0; i < chart1.ChartAreas.Count; i++)
                 { chart1.ChartAreas[i].CursorX.Position = index_X; }
 
@@ -109,6 +118,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
         private void otrisovka_graf_listbox(int f_min, int f_max )
         {
+            string s;
             for (ushort i = 0; i < 6; i++)
             {
                 chart1.Series[i].Points.Clear();
@@ -120,8 +130,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 {
                     if (data_freq[j].flag_yes)
                     {
-                        listbox_arr_data_graf[i].Items.Add(data_freq[j].form_one_string_ListBox(i));
                         chart1.Series[i].Points.AddXY(data_freq[j].Freq, data_freq[j].val[i]);
+                        s = data_freq[j].form_one_string_ListBox(data_freq[j].Freq, data_freq[j].val[i]);
+                        listbox_arr_data_graf[i].Items.Add(s);
                     }
                 }
             }
