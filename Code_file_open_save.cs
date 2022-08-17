@@ -51,7 +51,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     temp_write.WriteLine("#set Time_Step  " + "\t" + Set_Generator.Time_Step.ToString());
                     temp_write.WriteLine("#set N_step     " + "\t" + Set_Generator.N_step.ToString());
                     temp_write.WriteLine("#set F_marker   " + "\t" + numericUpDown_mouse.Value.ToString());
-                    for(int i = 0; i < 6; i++)
+                    temp_write.WriteLine("#set Chart_min  " + "\t" + chart1.ChartAreas[0].AxisX.Minimum.ToString());
+                    temp_write.WriteLine("#set Chart_max  " + "\t" + chart1.ChartAreas[0].AxisX.Maximum.ToString());
+                    for (int i = 0; i < 6; i++)
                     {
                         switch (i)
                         {               // text_coment - на будущее, на форме, будет сделан выбор пакета данных для построения графика, пока так
@@ -116,8 +118,20 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                 if (read_stroka.IndexOf("F_Step") > 0) { Set_Generator.F_Step = temp_ushort; }
                                 if (read_stroka.IndexOf("Time_Step") > 0) { Set_Generator.Time_Step = temp_ushort; }
                                 if (read_stroka.IndexOf("N_step") > 0) { Set_Generator.N_step = temp_ushort; }
-                                if (read_stroka.IndexOf("F_marker") > 0) 
-                                { 
+                                if (read_stroka.IndexOf("Chart_min") > 0)
+                                {
+                                    for (int i = 0; i < 6; i++) 
+                                    { chart1.ChartAreas[i].AxisX.Minimum = temp_ushort; }
+                                    numericUpDown_mouse.Minimum = temp_ushort;
+                                }
+                                if (read_stroka.IndexOf("Chart_max") > 0)
+                                {
+                                    for (int i = 0; i < 6; i++) 
+                                    { chart1.ChartAreas[i].AxisX.Maximum = temp_ushort; }
+                                    numericUpDown_mouse.Maximum = temp_ushort;
+                                }
+                                if (read_stroka.IndexOf("F_marker") > 0)
+                                {
                                     temp_numericUpDown_Value = (int)temp_ushort;
                                     // вот дошли до точки, когда все таки есть надежда, что данные таки есть будут
                                     // чистим на радости массив данных, к приему новых
@@ -167,6 +181,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     { old_freq = data_freq[i].Freq; }
                 }
                 otrisovka_graf_listbox(Fmin, Fmax);
+                numeric_Up_Down(temp_numericUpDown_Value); // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
                 numericUpDown_mouse.Value = temp_numericUpDown_Value;
             }// if (openFileDialog1.ShowDialog() == DialogResult.OK)
         } // private void open_file_extract_data()

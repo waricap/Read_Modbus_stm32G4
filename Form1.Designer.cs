@@ -85,6 +85,7 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.button_open = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_mouse)).BeginInit();
             this.SuspendLayout();
@@ -92,19 +93,12 @@
             // listBox1
             // 
             this.listBox1.FormattingEnabled = true;
-            this.listBox1.Items.AddRange(new object[] {
-            "111",
-            "222",
-            "333",
-            "444",
-            "555",
-            "666",
-            "777",
-            "888"});
             this.listBox1.Location = new System.Drawing.Point(105, 74);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(120, 121);
             this.listBox1.TabIndex = 0;
+            this.listBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.numeric_insert_List_Box_all);
+            this.listBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numeric_insert_List_Box_all);
             // 
             // button_read_ONE
             // 
@@ -135,87 +129,47 @@
             // listBox2
             // 
             this.listBox2.FormattingEnabled = true;
-            this.listBox2.Items.AddRange(new object[] {
-            "111",
-            "222",
-            "333",
-            "444",
-            "555",
-            "666",
-            "777",
-            "888"});
             this.listBox2.Location = new System.Drawing.Point(105, 201);
             this.listBox2.Name = "listBox2";
             this.listBox2.Size = new System.Drawing.Size(120, 121);
             this.listBox2.TabIndex = 3;
+            this.listBox2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numeric_insert_List_Box_all);
             // 
             // listBox3
             // 
             this.listBox3.FormattingEnabled = true;
-            this.listBox3.Items.AddRange(new object[] {
-            "111",
-            "222",
-            "333",
-            "444",
-            "555",
-            "666",
-            "777",
-            "888"});
             this.listBox3.Location = new System.Drawing.Point(105, 328);
             this.listBox3.Name = "listBox3";
             this.listBox3.Size = new System.Drawing.Size(120, 121);
             this.listBox3.TabIndex = 4;
+            this.listBox3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numeric_insert_List_Box_all);
             // 
             // listBox4
             // 
             this.listBox4.FormattingEnabled = true;
-            this.listBox4.Items.AddRange(new object[] {
-            "111",
-            "222",
-            "333",
-            "444",
-            "555",
-            "666",
-            "777",
-            "888"});
             this.listBox4.Location = new System.Drawing.Point(105, 455);
             this.listBox4.Name = "listBox4";
             this.listBox4.Size = new System.Drawing.Size(120, 121);
             this.listBox4.TabIndex = 5;
+            this.listBox4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numeric_insert_List_Box_all);
             // 
             // listBox5
             // 
             this.listBox5.FormattingEnabled = true;
-            this.listBox5.Items.AddRange(new object[] {
-            "111",
-            "222",
-            "333",
-            "444",
-            "555",
-            "666",
-            "777",
-            "888"});
             this.listBox5.Location = new System.Drawing.Point(105, 582);
             this.listBox5.Name = "listBox5";
             this.listBox5.Size = new System.Drawing.Size(120, 121);
             this.listBox5.TabIndex = 6;
+            this.listBox5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numeric_insert_List_Box_all);
             // 
             // listBox6
             // 
             this.listBox6.FormattingEnabled = true;
-            this.listBox6.Items.AddRange(new object[] {
-            "111",
-            "222",
-            "333",
-            "444",
-            "555",
-            "666",
-            "777",
-            "888"});
             this.listBox6.Location = new System.Drawing.Point(105, 709);
             this.listBox6.Name = "listBox6";
             this.listBox6.Size = new System.Drawing.Size(120, 121);
             this.listBox6.TabIndex = 7;
+            this.listBox6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numeric_insert_List_Box_all);
             // 
             // chart1
             // 
@@ -633,7 +587,7 @@
             0,
             0,
             0});
-            this.numericUpDown_mouse.ValueChanged += new System.EventHandler(this.numericUpDown_mouse_ValueChanged);
+            this.numericUpDown_mouse.MouseUp += new System.Windows.Forms.MouseEventHandler(this.numericUpDown_mouse_MouseUp);
             // 
             // label_message
             // 
@@ -672,11 +626,21 @@
             this.button_open.UseVisualStyleBackColor = true;
             this.button_open.Click += new System.EventHandler(this.button_open_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(270, 836);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(70, 13);
+            this.label1.TabIndex = 40;
+            this.label1.Text = "e.Location.Y ";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1884, 861);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.button_open);
             this.Controls.Add(this.button_Save);
             this.Controls.Add(this.label_message);
@@ -774,6 +738,7 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.Button button_open;
+        private System.Windows.Forms.Label label1;
     }
 }
 

@@ -427,7 +427,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 { old_freq = data_freq[i].Freq; }
             }
             otrisovka_graf_listbox(Fmin, Fmax);
-
             return;
         } // private string Read_register_scan_freq(ref byte[] array_read, 
 

@@ -177,11 +177,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
             _ = Read_cicle_scan_freq(cmd_read_1);
         }
 
-        private void numericUpDown_mouse_ValueChanged(object sender, EventArgs e)
-        {
-            numeric_Up_Down_change();
-        }
-
         private void button_Save_Click(object sender, EventArgs e)
         {
             save_data_in_file();
@@ -191,5 +186,11 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             open_file_extract_data();
         }
+
+        private void numericUpDown_mouse_MouseUp(object sender, MouseEventArgs e)
+        {
+            numeric_Up_Down_change(((NumericUpDown)sender).Height, e);
+        }
+
     }
 }
