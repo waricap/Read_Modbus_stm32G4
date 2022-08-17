@@ -91,7 +91,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             openFileDialog1.InitialDirectory = path_directory;  // устанавливает каталог, который отображается при первом вызове окна
             openFileDialog1.DefaultExt = ".tfx"; // устанавливает расширение файла, которое добавляется по умолчанию, если пользователь ввел имя файла без расширения
             openFileDialog1.AddExtension = true;// при значении true добавляет к имени файла расширение при его отсуствии. Расширение берется из свойства DefaultExt или Filter
-            openFileDialog1.Title = "Сохранить данные текущего замера"; // заголовок диалогового окна
+            openFileDialog1.Title = "Загрузить из файла сохраненные данные"; // заголовок диалогового окна
             openFileDialog1.Filter = "(*.tfx) | *.tfx"; // задает фильтр файлов, благодаря чему в диалоговом окне можно отфильтровать файлы по расширению. Фильтр задается в следующем формате Название_файлов| *.расширение.Например, Текстовые файлы(*.txt)| *.txt.
 
             int num_data_paket=0; // при отсосе данных это будет номер пакета данных, ну и номер графика тоже
@@ -185,5 +185,48 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 numericUpDown_mouse.Value = temp_numericUpDown_Value;
             }// if (openFileDialog1.ShowDialog() == DialogResult.OK)
         } // private void open_file_extract_data()
+
+        private void open_data_SpLab()
+        {
+            Class_data df = new Class_data();
+            // диалог выбора имени для файла записи
+            openFileDialog1.InitialDirectory = path_directory;  // устанавливает каталог, который отображается при первом вызове окна
+            openFileDialog1.DefaultExt = ".txt"; // устанавливает расширение файла, которое добавляется по умолчанию, если пользователь ввел имя файла без расширения
+            openFileDialog1.AddExtension = true;// при значении true добавляет к имени файла расширение при его отсуствии. Расширение берется из свойства DefaultExt или Filter
+            openFileDialog1.Title = "Найти данные от SpLab, загрузить в 6 график"; // заголовок диалогового окна
+            openFileDialog1.Filter = "(*.txt) | *.txt"; // задает фильтр файлов, благодаря чему в диалоговом окне можно отфильтровать файлы по расширению. Фильтр задается в следующем формате Название_файлов| *.расширение.Например, Текстовые файлы(*.txt)| *.txt.
+
+            int num_data_paket = 0; // при отсосе данных это будет номер пакета данных, ну и номер графика тоже
+            int temp_numericUpDown_Value = freq_begin_band;
+            int Fmin = int.MaxValue;
+            int Fmax = int.MinValue;
+            char[] delete_char = {'\r', '\n', '\t', ' '};
+            List<int> freq = new List<int>();
+            List<float> val = new List<float>();
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                string patch_file = openFileDialog1.FileName;   // получаем имя выбранный файл
+                using (StreamReader temp_read = new StreamReader(patch_file))
+                {
+                    string read_stroka = temp_read.ReadLine();
+                    while (read_stroka != null) 
+                    {
+                        if (read_stroka.Length > 0)
+                        {
+                            // читаем, смотрим содержание, раскидываем туда сюда
+                            if ((read_stroka[0] >= '0') & (read_stroka[0] <= '9'))  // строки данных содержат только цифры, если там что ещё - проброс
+                            {
+                                string[] array_string_data = (read_stroka.Replace('.', ',')).Split('\t');
+                                freq.Add( (int)Convert.ToDecimal(array_string_data[0].Trim(delete_char)));
+                                val.Add ( (float) Convert.ToDecimal(array_string_data[1].Trim(delete_char)));
+                            }
+                        }
+                        read_stroka = temp_read.ReadLine();
+                    } // while ((read_stroka != null) && (read_stroka.Length > 0))
+                }// using (StreamReader temp_read = new StreamReader(patch_file))
+                otrisovka_graf_listbox_SpLab(freq, val);
+            } // if (openFileDialog1.ShowDialog() == DialogResult.OK)
+        }// private void open_data_SpLab()
     }
 }

@@ -209,5 +209,22 @@ namespace Read_Modbus_UsbCDC_stm32G4
             numericUpDown_mouse.Maximum = f_max;
             numericUpDown_mouse.Minimum = f_min;
         }
+
+        private void otrisovka_graf_listbox_SpLab(List<int> freq, List<float>val)
+        {
+
+                chart1.Series[5].Points.Clear();
+                //listbox_arr_data_graf[5].Items.Clear();
+
+                for (int j = 0; j < freq.Count; j++)
+                {
+                    if ((chart1.ChartAreas[5].AxisX.Maximum > freq[j]) &(chart1.ChartAreas[5].AxisX.Minimum < freq[j]))
+                    {
+                        chart1.Series[5].Points.AddXY(freq[j], val[j]);
+                        //s = data_freq[j].form_one_string_ListBox(data_freq[j].Freq, data_freq[j].val[i]);
+                        //listbox_arr_data_graf[i].Items.Add(s);
+                    }
+                }
+        }
     }
 }

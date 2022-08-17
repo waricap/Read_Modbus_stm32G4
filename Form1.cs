@@ -192,5 +192,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
             numeric_Up_Down_change(((NumericUpDown)sender).Height, e);
         }
 
+        private void button_SpLab_Click(object sender, EventArgs e)
+        {
+            open_data_SpLab();
+        }
     }
 }
