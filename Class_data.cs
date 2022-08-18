@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Read_Modbus_UsbCDC_stm32G4
 {
@@ -25,6 +26,18 @@ namespace Read_Modbus_UsbCDC_stm32G4
         public UInt16 N_step;      //	Reg_CMD_Buf[5] - регистр N-количество степов при сканировании 0-1000
     }
 
+    class info_data_chart_class
+    {
+        public Button Button_download;
+        public ListBox listbox_data_graf;
+        public Label label_name_file;
+        public info_data_chart_class()
+        {
+            Button Button_download = new Button();
+            ListBox listBox = new ListBox();
+            Label label = new Label();
+        }
+    }
     class Class_data :  IComparable  
     {
         public UInt16 Fmin = 14500; // минимальная частота,  freq - не должен выходить за эти пределы

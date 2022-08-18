@@ -78,6 +78,38 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 { numericUpDown_mouse.Value = Set_Generator.Freq_start; }
         }
 
+        void init_info_data_chart()
+        {
+            for (int i = 0; i < 6; i++)
+            { info_data_chart.Add(new info_data_chart_class()); }
+
+            info_data_chart[0].listbox_data_graf = listBox1;
+            info_data_chart[1].listbox_data_graf = listBox2;
+            info_data_chart[2].listbox_data_graf = listBox3;
+            info_data_chart[3].listbox_data_graf = listBox4;
+            info_data_chart[4].listbox_data_graf = listBox5;
+            info_data_chart[5].listbox_data_graf = listBox6;
+
+            for (int i=3; i<6; i++)
+            {
+                info_data_chart[i].label_name_file = new System.Windows.Forms.Label();
+                info_data_chart[i].label_name_file.Text = i.ToString();
+                info_data_chart[i].label_name_file.AutoSize = true;
+                info_data_chart[i].label_name_file.Size = new System.Drawing.Size(75, 14);
+                info_data_chart[i].label_name_file.Location = new System.Drawing.Point(5, info_data_chart[i].listbox_data_graf.Location.Y);
+                Controls.Add(info_data_chart[i].label_name_file);
+
+                info_data_chart[i].Button_download = new System.Windows.Forms.Button();
+                info_data_chart[i].Button_download.Name = "b" + i.ToString();
+                info_data_chart[i].Button_download.Location = new Point(16, info_data_chart[i].listbox_data_graf.Location.Y+ info_data_chart[i].label_name_file.Size.Height +2);
+                info_data_chart[i].Button_download.Size = new Size(75, 58);
+                info_data_chart[i].Button_download.Text = "загрузка данных из SpLab";
+                info_data_chart[i].Button_download.UseVisualStyleBackColor = true;
+                info_data_chart[i].Button_download.Click += new System.EventHandler(this.button_Click);
+                Controls.Add(info_data_chart[i].Button_download);
+            }
+        }
+
 
 
     } // public partial class Form1

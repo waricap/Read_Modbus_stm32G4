@@ -32,6 +32,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private static int freq_begin_band = 14500;
         private List< Class_data> data_freq = new List<Class_data>();
         private Set_Generator_struct Set_Generator = new Set_Generator_struct();
+        private List<info_data_chart_class> info_data_chart = new List<info_data_chart_class>();
 
         public Form1()
         {
@@ -45,12 +46,16 @@ namespace Read_Modbus_UsbCDC_stm32G4
             listbox_arr_data_graf[4] = listBox5;
             listbox_arr_data_graf[5] = listBox6;
 
+            init_info_data_chart();
+
             label_chart_marker[0] = label_chart1;
             label_chart_marker[1] = label_chart2;
             label_chart_marker[2] = label_chart3;
             label_chart_marker[3] = label_chart4;
             label_chart_marker[4] = label_chart5;
             label_chart_marker[5] = label_chart6;
+
+            
 
             // чтение портов доступных в системе
             // и сформировать listBox_ComPort - на выбор
@@ -192,9 +197,11 @@ namespace Read_Modbus_UsbCDC_stm32G4
             numeric_Up_Down_change(((NumericUpDown)sender).Height, e);
         }
 
-        private void button_SpLab_Click(object sender, EventArgs e)
+        private void button_Click(object sender, EventArgs e)
         {
-            open_data_SpLab();
+            int n = Convert.ToInt32(((Button)sender).Name.Substring(1));
+            open_data_SpLab(n);
         }
+
     }
 }
