@@ -24,7 +24,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
         void numeric_Up_Down(int m) // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
         {
             int index_data_freq =0;
-            ushort index_X = (ushort)numericUpDown_mouse.Value;
+            double v = (double) numericUpDown_mouse.Value;
+                if (v > chart1.ChartAreas[0].AxisX.Maximum) { v = chart1.ChartAreas[0].AxisX.Maximum; }
+                if (v < chart1.ChartAreas[0].AxisX.Minimum) { v = chart1.ChartAreas[0].AxisX.Minimum; }
+            ushort index_X = (ushort)v;
             if (m > 1)
             {
                 index_X = (ushort)m;
@@ -74,6 +77,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 index_X = index_find;
                 numericUpDown_mouse.Value = index_X;
                 m = 0;
+            }
+            else
+            {
+
             }
 
             for (int i = 0; i < chart1.ChartAreas.Count; i++)

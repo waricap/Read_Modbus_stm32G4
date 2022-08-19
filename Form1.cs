@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
 using Modbus.Device;
-
+using System.Windows.Forms.DataVisualization.Charting;
 
 /// <summary>
 /// инфа  по работе с СОМ портом
@@ -67,7 +67,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             init_COM_port();
 
             init_chart();// при старте - вид на полную, потом по ходу жизни - масштабировать
-            
+            chart1.Legends[0].Position = new ElementPosition(90,0,20,9);
+            //chart1.Legends[0].Position.Y = 50;
         }
 
         private void button_read_ONE_Click(object sender, EventArgs e)

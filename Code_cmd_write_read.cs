@@ -26,7 +26,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
             byte[] cmd_read_1 = { 7, 4, 0, 64, 0, 0 }; // для совместимости
 
             serialPort_MB.Close();
-            label_out.Text = message_status;
         }
         public void read_ONE()
         {
@@ -36,7 +35,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
             Class_data temp_data = new Class_data();
             string status_answer = Answer_Read_Register(ref array_read, ref message_status, cmd_read_1);
             serialPort_MB.Close();
-            label_out.Text = message_status;
 
             if (status_answer == "OK")
             {
@@ -143,6 +141,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             } // try
             catch (Exception ex)
             {
+                label_error.Text = ex.Message;
                 message_status = message_status + ex.Message;
                 answer_status = "ERROR_TIMEOUT";
             }
@@ -182,7 +181,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 serialPort_MB.Write(cmd_write_16, 0, cmd_write_16.Length);
             }
             catch (Exception ex)
-            { label_out.Text = ex.Message; }
+            { label_error.Text = ex.Message; }
 
             return cmd_write_16;
         } // private byte[] Write_Cmd_scan_freq()
@@ -235,7 +234,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                 } // if (massiv_answer[1] == data_PDU[1])
                                 else
                                 {
-                                    label_out.Text = " ошибка какая то пришла ";
+                                    label_error.Text = " ошибка какая то пришла ";
                                     index_end_recieve = 5; //  длина ошибочного сообщения на команду 16, с кодом ошибки и CRC кодом
                                     if (count_byte_read < (index_end_recieve - 1))
                                     {
@@ -275,7 +274,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
             } // try
             catch (Exception ex)
-            { label_out.Text = ex.Message; }
+            { label_error.Text = ex.Message; }
             return answer_status;
         }
 
@@ -287,7 +286,15 @@ namespace Read_Modbus_UsbCDC_stm32G4
             uint index_end_recieve = 85;
             // крутимся , поиск одной посылки
             Array.Resize(ref array_read, 86);
-            await Task.Run(() => array_read[0] = (byte)serialPort_MB.BaseStream.ReadByte());
+            try
+            { await Task.Run(() => array_read[0] = (byte)serialPort_MB.BaseStream.ReadByte()); }
+            catch (Exception ex)
+            {
+                label_error.Text = ex.Message;
+                serialPort_MB.Close();
+                return array_read;
+            }
+
 
             while (count_byte_read < index_end_recieve)
             {
@@ -296,7 +303,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     if (count_byte_read == 0)
                     {
                       count_byte_read = 1;
-                      await Task.Run(() => array_read[1] = (byte)serialPort_MB.BaseStream.ReadByte());
+                        try
+                        { await Task.Run(() => array_read[1] = (byte)serialPort_MB.BaseStream.ReadByte()); }
+                        catch (Exception ex)
+                        {
+                            label_error.Text = ex.Message;
+                            serialPort_MB.Close();
+                            break;
+                        }
                     }
                     else
                     {
@@ -305,7 +319,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                             if (count_byte_read == 1)
                             {
                                count_byte_read++;
-                               await Task.Run(() => array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte());
+                                try
+                                { await Task.Run(() => array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte()); }
+                                catch (Exception ex)
+                                {
+                                    label_error.Text = ex.Message;
+                                    serialPort_MB.Close();
+                                    break;
+                                }
                             }
                             else
                             {
@@ -314,7 +335,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                     if (count_byte_read < (index_end_recieve - 1))
                                     {
                                       count_byte_read++;
-                                      await Task.Run(() => array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte());
+                                        try
+                                        { await Task.Run(() => array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte()); }
+                                        catch (Exception ex)
+                                        {
+                                            label_error.Text = ex.Message;
+                                            serialPort_MB.Close();
+                                            break;
+                                        }
                                     }
                                     else
                                     { count_byte_read++; } //  if (count_byte_read < (index_end_recieve-1))
@@ -336,7 +364,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 else
                 {
                    count_byte_read = 0;
-                   await Task.Run(() => array_read[0] = (byte)serialPort_MB.BaseStream.ReadByte());
+                    try
+                    { await Task.Run(() => array_read[0] = (byte)serialPort_MB.BaseStream.ReadByte()); }
+                    catch (Exception ex)
+                    {
+                        label_error.Text = ex.Message;
+                        serialPort_MB.Close();
+                        break;
+                    }
                 }//  else  if (massiv_answer[0] == data_PDU[0]) 
             } // while(count_byte_read < index_end_recieve)
             return array_read;
@@ -355,6 +390,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
             // крутимся, выход если прерван поток входной (нажата синяя кнопка )
             int ik = 0;
+            ushort old_freq = 0;
+            ushort perwiy_tuk = 0; // если был первый тук в конец диапазона, надо очистить  data_freq, поворотный проход будет правильным - последним
             Class_data temp_data = new Class_data();
 
             while (ik < 2100) // крутится в этом цикле, пока не схватим концы диапазона, после этого ik=2101
@@ -366,10 +403,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 } // try
                 catch (Exception ex)
                 {
-                    label_out.Text = ex.Message;
+                    label_error.Text = ex.Message;
                     answer_status_cicles = "ERROR_TIMEOUT";
                     serialPort_MB.Close();
-                    ik = int.MaxValue;
+                    break;
                 }
 
                     // пакет 80 байт словили, теперь проверка CRC
@@ -381,40 +418,52 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     if (old_CRC != (data_CRC[0] + data_CRC[1]))
                     {
                         old_CRC = data_CRC[0] + data_CRC[1];
-                        if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                    if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1)) // CRC совпал - удача
+                    {
+                        temp_data.clear_data();
+                        ushort t = (ushort)BitConverter.ToSingle(array_read, 3);
+                        temp_data.Freq = t;
+                        for (int i = 0; i < 6; i++)
                         {
-                            temp_data.clear_data();
-                            ushort t = (ushort)BitConverter.ToSingle(array_read, 3);
-                            temp_data.Freq = t;
-                            for (int i = 0; i < 6; i++)
-                            {
-                                temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i);
-                                chart1.Series[i].Points.AddXY(temp_data.Freq, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
-                            }
-                            label_out.Text = temp_data.Freq.ToString();
-                            temp_data.flag_yes = true;// значит для этой частоты пришли данные
-                             data_freq.Add( new Class_data( temp_data));                         
+                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i);
+                            chart1.Series[i].Points.AddXY(temp_data.Freq, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
+                        }
+                        label_out.Text = temp_data.Freq.ToString();
+                        temp_data.flag_yes = true;// значит для этой частоты пришли данные
+                        data_freq.Add(new Class_data(temp_data));
 
-                            // надо крутится до тех пор, пока не будут схвачены концы диапазона
-                            if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
-                            if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
-                            if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
-                                    ((Fmin - 50) <= Set_Generator.Freq_start))
-                            { ik = int.MaxValue; }
-                            else
-                            { ik++; }
-                        } // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                        // надо крутится до тех пор, пока не будут схвачены концы диапазона
+                        if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
+                        if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
+                        if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) |
+                            ((Fmin - 50) <= Set_Generator.Freq_start))
+                        {
+                            if (perwiy_tuk == 0) { data_freq.Clear(); }
+                            perwiy_tuk++;
+                        }
+                        if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
+                                ((Fmin - 50) <= Set_Generator.Freq_start))
+                        { break; }
                         else
                         {
-                            label_out.Text = " проверка CRC - ОШИБКА ";
-                            answer_status_cicles = "ERROR_CRC";
-                        }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                            if (old_freq != temp_data.Freq)
+                            {
+                                ik++;
+                                old_freq = temp_data.Freq;
+                            }
+                        } // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                    }
+                    else
+                    {
+                        label_out.Text = " проверка CRC - ОШИБКА ";
+                        answer_status_cicles = "ERROR_CRC";
+                    }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                     }
             }//while (true)
             serialPort_MB.Close();
             //data_freq.GroupBy(x => x.Freq).ToList();
             data_freq.Sort(); // убрать дублирующие , отсортровать
-            ushort old_freq = 0;
+
             //  data_freq.Distinct  - удаление дублирующих старым дедовским способом,  !! после сортировки
             for (int i = 0; i < data_freq.Count; i++)
             {

@@ -85,8 +85,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         {
                             try
                             { temp_write.Write(df.form_one_string_file()); } // если там есть какие  данные, скидываем. Не на каждой точке будет такая удача.
-                            catch (Exception e)
-                            { label_error.Text = "ошибка записи шапки данных " + e.Message; }
+                            catch (Exception ex)
+                            { label_error.Text = "ошибка записи шапки данных " + ex.Message; }
                         }
                     label_name_file_zamer.Text = Path.GetFileName(patch_file);
                 }// using (StreamWriter temp_write = new StreamWriter(patch_file, true))
@@ -118,8 +118,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 {
                     try
                     { read_stroka = temp_read.ReadLine(); }// читаем первую строку
-                    catch (Exception e)
-                    { label_error.Text = "ошибка чтения файла: " + e.Message; }
+                    catch (Exception ex)
+                    { label_error.Text = "ошибка чтения файла: " + ex.Message; }
 
                     while ((read_stroka != null) && (read_stroka.Length >0))
                     {
@@ -139,12 +139,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                     for (int i = 0; i < 6; i++) 
                                     { chart1.ChartAreas[i].AxisX.Minimum = temp_ushort; }
                                     numericUpDown_mouse.Minimum = temp_ushort;
+                                    Fmin = temp_ushort;
                                 }
                                 if (read_stroka.IndexOf("Chart_max") > 0)
                                 {
                                     for (int i = 0; i < 6; i++) 
                                     { chart1.ChartAreas[i].AxisX.Maximum = temp_ushort; }
                                     numericUpDown_mouse.Maximum = temp_ushort;
+                                    Fmax = temp_ushort;
                                 }
                                 if (read_stroka.IndexOf("F_marker") > 0)
                                 {
@@ -174,8 +176,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         } // if (read_stroka[0] == '#')
                         try
                         { read_stroka = temp_read.ReadLine(); }// читаем следующую строку
-                        catch (Exception e)
-                        { label_error.Text = "ошибка чтения файла: " + e.Message; }
+                        catch (Exception ex)
+                        { label_error.Text = "ошибка чтения файла: " + ex.Message; }
 
                     } // while (read_stroka.Length >0)
                     label_name_file_zamer.Text = openFileDialog1.SafeFileName;
@@ -201,8 +203,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     { old_freq = data_freq[i].Freq; }
                 }
                 otrisovka_graf_listbox(Fmin, Fmax);
-                numeric_Up_Down(temp_numericUpDown_Value); // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
                 numericUpDown_mouse.Value = temp_numericUpDown_Value;
+                numeric_Up_Down(temp_numericUpDown_Value); // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
             }// if (openFileDialog1.ShowDialog() == DialogResult.OK)
         } // private void open_file_extract_data()
 
@@ -227,8 +229,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 {
                     try
                         { read_stroka = temp_read.ReadLine(); }
-                    catch (Exception  e)
-                        { label_error.Text = "ошибка чтения файла: " + e.Message ;  }
+                    catch (Exception  ex)
+                        { label_error.Text = "ошибка чтения файла: " + ex.Message ;  }
                     
                     while (read_stroka != null) 
                     {
