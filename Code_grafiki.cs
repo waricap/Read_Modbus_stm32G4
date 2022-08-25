@@ -19,12 +19,12 @@ namespace Read_Modbus_UsbCDC_stm32G4
             int ret = 0;
             if (e.Location.Y > numberic_height / 2) { ret = -1; }
             if (e.Location.Y < numberic_height / 2) { ret = 1; }
-            numeric_Up_Down(ret);
+            numeric_Up_Down(ret, (double)numericUpDown_mouse.Value);
         }
-        void numeric_Up_Down(int m) // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
+        void numeric_Up_Down(int m, double v) // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
         {
             int index_data_freq =0;
-            double v = (double) numericUpDown_mouse.Value;
+
                 if (v > chart1.ChartAreas[0].AxisX.Maximum) { v = chart1.ChartAreas[0].AxisX.Maximum; }
                 if (v < chart1.ChartAreas[0].AxisX.Minimum) { v = chart1.ChartAreas[0].AxisX.Minimum; }
             ushort index_X = (ushort)v;
@@ -114,7 +114,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     label_chart_marker[i].Text = "пусто-пусто";
                 }
                 // найти положение каждого лейбла по высоте, ну чтоб красиво было
-                koord_Y = chart1.Location.Y + chart1.Height * ((int)chart1.ChartAreas[i].Position.Y) / 100;
+                koord_Y = chart1.Location.Y + chart1.Height * ((int)chart1.ChartAreas[i].Position.Y) / 100 +10;
                 label_chart_marker[i].Location = new Point(label_X, koord_Y);
                 // тут же пока все ясно, выделим строку в listbox соответствующего графика
             } // for (int i = 0; i < 6; i++)
@@ -133,7 +133,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     {
                         listbox_arr_data_graf[i].SelectedIndex = index;
                     }
-                    numeric_Up_Down(Convert.ToInt32(((ListBox)sender).Items[index].ToString().Substring(0, 5)));
+                    numeric_Up_Down(Convert.ToInt32(((ListBox)sender).Items[index].ToString().Substring(0, 5)), (double)numericUpDown_mouse.Value);
                 }
                 else
                 {
@@ -188,7 +188,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             if (( p >= numericUpDown_mouse.Minimum) & ( p<= numericUpDown_mouse.Maximum))
             {
                 numericUpDown_mouse.Value = (int)chart1.ChartAreas[0].CursorX.Position;
-                numeric_Up_Down(0); // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
+                numeric_Up_Down(0, (double)numericUpDown_mouse.Value); // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
                 // а потом щёлкнет событие   numeric_Up_Down_change,  и будут разрисованы label_chart_mouse[] и все их данные
             }
         }

@@ -89,6 +89,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.button_stop_read = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_mouse)).BeginInit();
             this.SuspendLayout();
@@ -123,7 +124,7 @@
             this.label_out.AutoSize = true;
             this.label_out.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label_out.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.label_out.Location = new System.Drawing.Point(816, 37);
+            this.label_out.Location = new System.Drawing.Point(849, 34);
             this.label_out.Name = "label_out";
             this.label_out.Size = new System.Drawing.Size(83, 29);
             this.label_out.TabIndex = 2;
@@ -675,11 +676,22 @@
             this.label1.Size = new System.Drawing.Size(100, 23);
             this.label1.TabIndex = 0;
             // 
+            // button_stop_read
+            // 
+            this.button_stop_read.Location = new System.Drawing.Point(744, 37);
+            this.button_stop_read.Name = "button_stop_read";
+            this.button_stop_read.Size = new System.Drawing.Size(100, 23);
+            this.button_stop_read.TabIndex = 43;
+            this.button_stop_read.Text = "STOP_Read";
+            this.button_stop_read.UseVisualStyleBackColor = true;
+            this.button_stop_read.Click += new System.EventHandler(this.button_stop_read_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1884, 861);
+            this.Controls.Add(this.button_stop_read);
             this.Controls.Add(this.label_error);
             this.Controls.Add(this.label_out);
             this.Controls.Add(this.label_name_file_zamer);
@@ -783,6 +795,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button button_stop_read;
     }
 }
 

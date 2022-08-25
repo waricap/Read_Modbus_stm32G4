@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using Modbus.Device;
 using System.Windows.Forms.DataVisualization.Charting;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 /// <summary>
 /// инфа  по работе с СОМ портом
@@ -34,6 +35,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private Set_Generator_struct Set_Generator = new Set_Generator_struct();
         private List<info_data_chart_class> info_data_chart = new List<info_data_chart_class>();
 
+
         public Form1()
         {
             InitializeComponent();
@@ -55,8 +57,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
             label_chart_marker[4] = label_chart5;
             label_chart_marker[5] = label_chart6;
 
-            
-
             // чтение портов доступных в системе
             // и сформировать listBox_ComPort - на выбор
             add_text_ComPort();  // при работе, во время наведения мыши, тоже будет отрабатывать
@@ -68,8 +68,33 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
             init_chart();// при старте - вид на полную, потом по ходу жизни - масштабировать
             chart1.Legends[0].Position = new ElementPosition(90,0,20,9);
-            //chart1.Legends[0].Position.Y = 50;
+
+            // добавить  к обработчику клавиш ещё и обработку двух стрелок лево-право
+            // https://docs.microsoft.com/ru-ru/dotnet/api/system.windows.forms.form.keypreview?view=netframework-4.8
+            this.KeyPreview = true;
+            this.KeyDown += new KeyEventHandler(Form1_KeyDown);
         }
+
+        //-------------------------------------------------------------------------------------------
+        // By default, KeyDown does not fire for the ARROW keys
+        // По умолчанию нажатие клавиш не срабатывает для клавиш со стрелками. Но если   this.KeyPreview = true;
+        // Форма будет обрабатывать все кнопочные события до того, как элемент управления с фокусом обработает их.
+        // Обработать нажатые клавиши по свойству keyCode.
+        // установив KeyEventArg.Handled - свойство = false.  - кнопки управления остальные работали чтобы
+        void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Left:
+                    numeric_Up_Down(-1, (double)numericUpDown_mouse.Value - 1);
+                    break;
+                case Keys.Right:
+                    numeric_Up_Down( 1, (double)numericUpDown_mouse.Value + 1);
+                    break;
+            }
+            e.Handled = false;
+        }
+        //-------------------------------------------------------------------------------------------
 
         private void button_read_ONE_Click(object sender, EventArgs e)
         {
@@ -177,6 +202,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private  void button_cicle_read_Click(object sender, EventArgs e)
         {
             init_COM_port();
+            button_stop_read.Enabled = true;
+            button_cicle_read.Enabled = false;
             if (serialPort_MB.IsOpen == false)
             { serialPort_MB.Open(); }
             byte[] cmd_read_1 = { 7, 4, 0, 64, 0, 0 }; // для совместимости
@@ -203,6 +230,42 @@ namespace Read_Modbus_UsbCDC_stm32G4
             int n = Convert.ToInt32(((Button)sender).Name.Substring(1));
             open_data_SpLab(n);
         }
+
+        private void button_stop_read_Click(object sender, EventArgs e)
+        {
+            button_stop_read.Enabled=false;
+            button_cicle_read.Enabled =true;
+        }
+
+
+        private void button_sender(object sender)
+        {
+            button_stop_read.Enabled = false;
+            button_cicle_read.Enabled = true;
+        }
+
+        private void button_EventArgs(object sender, EventArgs e)
+        {
+            button_stop_read.Enabled = false;
+            button_cicle_read.Enabled = true;
+        }
+
+        private void button_all(object sender, EventArgs e)
+        {
+            button_stop_read.Enabled = false;
+            button_cicle_read.Enabled = true;
+        }
+
+
+
+        // =============== вариант с переопределением при наследовании класса, кнопка ТАВ не работает при этом
+        //protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        // // private bool ProcessCmdKey(ref Message msg, Keys keyData)
+        //{
+        //    if (keyData == (Keys.Left)) { numeric_Up_Down(-1, (double)numericUpDown_mouse.Value - 1); }
+        //    if (keyData == (Keys.Right)) { numeric_Up_Down(1, (double)numericUpDown_mouse.Value + 1); }
+        //    return true;// base.ProcessCmdKey(ref msg, keyData);
+        //}
 
     }
 }

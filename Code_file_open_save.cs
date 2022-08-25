@@ -36,63 +36,35 @@ namespace Read_Modbus_UsbCDC_stm32G4
             if (saveFileDialog1.ShowDialog() == DialogResult.OK) // отработаем запись данных только если нажата кнопочка ОК в диалоге
             {
                 string patch_file = saveFileDialog1.FileName;   // получаем имя выбранный файл
-
-                using (StreamWriter temp_write = new StreamWriter(patch_file, false))
+                try
                 {
+                    StreamWriter temp_write = new StreamWriter(patch_file, false);
                     // файл будем экспортировать редактировать в EXCEL, поэтому формат соблюдать обязан ты
-                    try
+                    temp_write.WriteLine("## вначале идут данные #set..., на которых снимался график, на [16] позиции стоит <TAB>, потом данные, <ENTER>");
+                    temp_write.WriteLine("##   ( текущие настройки генератора могут не совпасть, и наверняка не совпадут, со считанными настройками )");
+                    temp_write.WriteLine("## потом строка с номером и названием графика, #0# ... <TAB> N <ENTER> ");
+                    temp_write.WriteLine("## непосредственно данные идут в формате: частота-5цифр, <TAB>, значение параметра через десятичная запятая <ENTER>");
+                    temp_write.WriteLine("## экспоненциальная форма записи числа E+n - приходит из EXCEL - не прокатывает ");
+                    temp_write.WriteLine("#set Freq_start " + "\t" + Set_Generator.Freq_start.ToString());
+                    temp_write.WriteLine("#set Power_proc " + "\t" + Set_Generator.Power_proc.ToString());
+                    temp_write.WriteLine("#set F_Step     " + "\t" + Set_Generator.F_Step.ToString());
+                    temp_write.WriteLine("#set Time_Step  " + "\t" + Set_Generator.Time_Step.ToString());
+                    temp_write.WriteLine("#set N_step     " + "\t" + Set_Generator.N_step.ToString());
+                    temp_write.WriteLine("#set F_marker   " + "\t" + numericUpDown_mouse.Value.ToString());
+                    temp_write.WriteLine("#set Chart_min  " + "\t" + chart1.ChartAreas[0].AxisX.Minimum.ToString());
+                    temp_write.WriteLine("#set Chart_max  " + "\t" + chart1.ChartAreas[0].AxisX.Maximum.ToString());
+                    foreach (Class_data df in data_freq)
                     {
-                        temp_write.WriteLine("## вначале идут данные #set..., на которых снимался график, на [16] позиции стоит <TAB>, потом данные, <ENTER>");
-                        temp_write.WriteLine("##   ( текущие настройки генератора могут не совпасть, и наверняка не совпадут, со считанными настройками )");
-                        temp_write.WriteLine("## потом строка с номером и названием графика, #0# ... <TAB> N <ENTER> ");
-                        temp_write.WriteLine("## непосредственно данные идут в формате: частота-5цифр, <TAB>, значение параметра через десятичная запятая <ENTER>");
-                        temp_write.WriteLine("## экспоненциальная форма записи числа E+n - приходит из EXCEL - не прокатывает ");
-                        temp_write.WriteLine("#set Freq_start " + "\t" + Set_Generator.Freq_start.ToString());
-                        temp_write.WriteLine("#set Power_proc " + "\t" + Set_Generator.Power_proc.ToString());
-                        temp_write.WriteLine("#set F_Step     " + "\t" + Set_Generator.F_Step.ToString());
-                        temp_write.WriteLine("#set Time_Step  " + "\t" + Set_Generator.Time_Step.ToString());
-                        temp_write.WriteLine("#set N_step     " + "\t" + Set_Generator.N_step.ToString());
-                        temp_write.WriteLine("#set F_marker   " + "\t" + numericUpDown_mouse.Value.ToString());
-                        temp_write.WriteLine("#set Chart_min  " + "\t" + chart1.ChartAreas[0].AxisX.Minimum.ToString());
-                        temp_write.WriteLine("#set Chart_max  " + "\t" + chart1.ChartAreas[0].AxisX.Maximum.ToString());
+                        temp_write.Write(df.form_one_string_file()); // если там есть какие  данные, скидываем. Не на каждой точке будет такая удача.
                     }
-                    catch (Exception e)
-                    { label_error.Text = "ошибка записи шапки данных " + e.Message ; }
-
-                        //switch (i)
-                        //{   // todo text_coment - на будущее, на форме, будет сделан выбор пакета данных для построения графика, пока так
-                        //    case 0:
-                        //        text_coment = "current I_out\t";
-                        //        break;
-                        //    case 1:
-                        //        text_coment = "voltage U_out\t";
-                        //        break;
-                        //    case 2:
-                        //        text_coment = "ph1_out\t";
-                        //        break;
-                        //    case 3:
-                        //        text_coment = "ph2_out\t";
-                        //        break;
-                        //    case 4:
-                        //        text_coment = "delta_Ph_out\t";
-                        //        break;
-                        //    case 5:
-                        //        text_coment = "power P_out\t";
-                        //        break;
-                        //}
-                        // пишем непосредственно данные
-                        foreach (Class_data df in data_freq)
-                        {
-                            try
-                            { temp_write.Write(df.form_one_string_file()); } // если там есть какие  данные, скидываем. Не на каждой точке будет такая удача.
-                            catch (Exception ex)
-                            { label_error.Text = "ошибка записи шапки данных " + ex.Message; }
-                        }
                     label_name_file_zamer.Text = Path.GetFileName(patch_file);
-                }// using (StreamWriter temp_write = new StreamWriter(patch_file, true))
+                    temp_write.Close();
+                }
+                catch (Exception e)
+                { label_error.Text = "ошибка записи данных " + e.Message; }
             } // if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             else
-            { label_error.Text = "ошибка открытия файла"; }
+            { label_error.Text = "ошибка открытия файла для записи"; }
         } //  save_data_in_file()
 
         private void open_file_extract_data()
@@ -105,7 +77,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
             openFileDialog1.Title = "Загрузить из файла сохраненные данные"; // заголовок диалогового окна
             openFileDialog1.Filter = "(*.tfx) | *.tfx"; // задает фильтр файлов, благодаря чему в диалоговом окне можно отфильтровать файлы по расширению. Фильтр задается в следующем формате Название_файлов| *.расширение.Например, Текстовые файлы(*.txt)| *.txt.
 
-            int num_data_paket=0; // при отсосе данных это будет номер пакета данных, ну и номер графика тоже
             int temp_numericUpDown_Value  = freq_begin_band;
             int Fmin = int.MaxValue;
             int Fmax = int.MinValue;
@@ -114,18 +85,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 string patch_file = openFileDialog1.FileName;   // получаем имя выбранный файл
-                using (StreamReader temp_read = new StreamReader(patch_file))
+                try // StreamReader temp_read = new StreamReader(patch_file);
                 {
-                    try
-                    { read_stroka = temp_read.ReadLine(); }// читаем первую строку
-                    catch (Exception ex)
-                    { label_error.Text = "ошибка чтения файла: " + ex.Message; }
-
-                    while ((read_stroka != null) && (read_stroka.Length >0))
+                    StreamReader temp_read = new StreamReader(patch_file);
+                    read_stroka = temp_read.ReadLine();  // читаем первую строку
+                    while ((read_stroka != null) && (read_stroka.Length > 0))
                     {
-                        // читаем, смотрим содержание, раскидываем туда сюда
-                        if (read_stroka[0] == '#')   // шапка коментариев интереса не представляет
-                        {
+                        if (read_stroka[0] == '#')   // читаем, смотрим содержание, раскидываем туда сюда
+                        {   // "##"  - шапка коментариев интереса не представляет
                             if (read_stroka[1] == 's')
                             {
                                 ushort temp_ushort = Convert.ToUInt16(read_stroka.Substring(16));
@@ -136,14 +103,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                 if (read_stroka.IndexOf("N_step") > 0) { Set_Generator.N_step = temp_ushort; }
                                 if (read_stroka.IndexOf("Chart_min") > 0)
                                 {
-                                    for (int i = 0; i < 6; i++) 
+                                    for (int i = 0; i < 6; i++)
                                     { chart1.ChartAreas[i].AxisX.Minimum = temp_ushort; }
                                     numericUpDown_mouse.Minimum = temp_ushort;
                                     Fmin = temp_ushort;
                                 }
                                 if (read_stroka.IndexOf("Chart_max") > 0)
                                 {
-                                    for (int i = 0; i < 6; i++) 
+                                    for (int i = 0; i < 6; i++)
                                     { chart1.ChartAreas[i].AxisX.Maximum = temp_ushort; }
                                     numericUpDown_mouse.Maximum = temp_ushort;
                                     Fmax = temp_ushort;
@@ -160,51 +127,50 @@ namespace Read_Modbus_UsbCDC_stm32G4
                             {
                                 if (read_stroka[1] == 'D')
                                 {// теперь, именно здесь,  непосредственно данные отсасываем из принятой строки
-                                    string[] array_string_data = read_stroka.Split('\t');
+                                    string[] array_string_data = read_stroka.Split('\t'); // разложим строку на слова
                                     df.Freq = Convert.ToUInt16(array_string_data[1]);
                                     if (Fmin > df.Freq) { Fmin = df.Freq; }
                                     if (Fmax < df.Freq) { Fmax = df.Freq; }
-                                    for(int i = 2; i < array_string_data.Length -3; i++)
+                                    for (int i = 2; i < array_string_data.Length - 3; i++)
                                     {
-                                        if (i<18)
-                                        { df.val[i-2] = (float) Convert.ToDecimal(array_string_data[i]); }
+                                        if (i < 18)
+                                        { df.val[i - 2] = (float)Convert.ToDouble(array_string_data[i]); }
                                     }
                                     df.flag_yes = true;
                                     data_freq.Add(new Class_data(df));
                                 }
                             }
                         } // if (read_stroka[0] == '#')
-                        try
-                        { read_stroka = temp_read.ReadLine(); }// читаем следующую строку
-                        catch (Exception ex)
-                        { label_error.Text = "ошибка чтения файла: " + ex.Message; }
-
+                        read_stroka = temp_read.ReadLine(); // читаем следующую строку
                     } // while (read_stroka.Length >0)
                     label_name_file_zamer.Text = openFileDialog1.SafeFileName;
-                } // using (StreamReader temp_read = new StreamReader(patch_file))
-                // поток читательный закрыт, раскидываем теперь полученые данные и разрисовываем все
-                textBox_Fstart.Text = Set_Generator.Freq_start.ToString();
-                textBox_Power.Text = Set_Generator.Power_proc.ToString(); 
-                textBox_Step.Text = Set_Generator.F_Step.ToString(); 
-                textBox_Step.Text = Set_Generator.Time_Step.ToString(); 
-                textBox_NumPoint.Text =  Set_Generator.N_step.ToString();
+                    temp_read.Close();
+                    // поток читательный закрыт, раскидываем теперь полученые данные и разрисовываем все
+                    textBox_Fstart.Text = Set_Generator.Freq_start.ToString();
+                    textBox_Power.Text = Set_Generator.Power_proc.ToString(); 
+                    textBox_Step.Text = Set_Generator.F_Step.ToString(); 
+                    textBox_Step.Text = Set_Generator.Time_Step.ToString(); 
+                    textBox_NumPoint.Text =  Set_Generator.N_step.ToString();
 
-                data_freq.Sort(); // убрать дублирующие , отсортровать
-                ushort old_freq = 0;
-                //  data_freq.Distinct  - удаление дублирующих старым дедовским способом,  !! после сортировки
-                for (int i = 0; i < data_freq.Count; i++)
-                {
-                    if (old_freq == data_freq[i].Freq)
+                    data_freq.Sort(); // убрать дублирующие , отсортровать
+                    ushort old_freq = 0;
+                    //  data_freq.Distinct  - удаление дублирующих старым дедовским способом,  !! после сортировки
+                    for (int i = 0; i < data_freq.Count; i++)
                     {
-                        data_freq.RemoveAt(i);
-                        if (i > 0) { i--; }
+                        if (old_freq == data_freq[i].Freq)
+                        {
+                            data_freq.RemoveAt(i);
+                            if (i > 0) { i--; }
+                        }
+                        else
+                        { old_freq = data_freq[i].Freq; }
                     }
-                    else
-                    { old_freq = data_freq[i].Freq; }
+                    otrisovka_graf_listbox(Fmin, Fmax);
+                    numericUpDown_mouse.Value = temp_numericUpDown_Value;
+                    numeric_Up_Down(temp_numericUpDown_Value, temp_numericUpDown_Value); // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
                 }
-                otrisovka_graf_listbox(Fmin, Fmax);
-                numericUpDown_mouse.Value = temp_numericUpDown_Value;
-                numeric_Up_Down(temp_numericUpDown_Value); // m==+1  нажат микрик +number;  m==-1  нажат микрик -number;  m==0 клац мыши по chart;  m==FREQ клац маши по ListBox
+                catch (Exception ex)
+                { label_error.Text = "ошибка чтения файла: " + ex.Message; }
             }// if (openFileDialog1.ShowDialog() == DialogResult.OK)
         } // private void open_file_extract_data()
 
@@ -252,6 +218,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
                     } // while ((read_stroka != null) && (read_stroka.Length > 0))
                     info_data_chart[num_chart].label_name_file.Text = openFileDialog1.SafeFileName;
+                    temp_read.Close();
                 }// using (StreamReader temp_read = new StreamReader(patch_file))
                 otrisovka_graf_listbox_SpLab(freq, val, num_chart);
                 // данные SpLab отрисованы по данным в реале, для ListBox_6 и для работы, надо привести-усреднить данные к шкале работы STM32G4
