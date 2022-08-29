@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.IO.Ports;
 using System.Drawing;
 using Modbus.Device;
+using Microsoft.Win32;
+using System.Windows.Forms;
 
 namespace Read_Modbus_UsbCDC_stm32G4
 {
@@ -13,6 +15,77 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
     public partial class Form1
     {
+        RegistryKey registr_user;
+        void init_start_data_registry()
+        {
+            // подгрузить стартовые данные, от после последней работы
+            num_point_freq_zamer = 28500;
+            freq_begin_band = 14500;
+            Set_Generator.Freq_start = 14500;
+            Set_Generator.F_Step = 10;
+            Set_Generator.Power_proc = 2;
+            Set_Generator.N_step = 1000;
+            Set_Generator.Time_Step = 25;
+            Set_Generator.flag_ON_autoTuning_freq = false;
+            Set_Generator.flag_ON_generation = false;
+            Set_Generator.flag_ON_scan_freq = false;
+            Set_Generator.flag_ON_autoTuning_freq = false;
+            path_directory = @"C:\Users\" + Environment.UserName + @"\source\repos\Read_Modbus_stm32G4\файлы_замеров_АЧХ";
+            default_com_port = "COM1";
+            default_baudrate = 921600;
+
+            // а теперь читаем, если там есть что осмысленное, переназначить
+             registr_user = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\" + GetType().Namespace, true);
+            if (registr_user == null)
+            {
+                MessageBox.Show(" не удалось создать в реестре папку " + registr_user.Name?.ToString() + "\nпоэтому данные будут по-умолчанию");
+            }
+            else
+            {   
+                if(registr_user.GetValue("num_point_freq_zamer") != null)
+                { num_point_freq_zamer = Convert.ToInt32(registr_user.GetValue("num_point_freq_zamer")); }
+
+                if (registr_user.GetValue("freq_begin_band") != null)
+                { freq_begin_band = Convert.ToInt32(registr_user.GetValue("freq_begin_band")); }
+
+                if (registr_user.GetValue("Set_Generator.Freq_start") != null)
+                { Set_Generator.Freq_start = (ushort)Convert.ToInt32(registr_user.GetValue("Set_Generator.Freq_start")); }
+
+                if (registr_user.GetValue("Set_Generator.F_Step") != null)
+                { Set_Generator.F_Step = (ushort)Convert.ToInt32(registr_user.GetValue("Set_Generator.F_Step")); }
+
+                if (registr_user.GetValue("Set_Generator.Power_proc") != null)
+                { Set_Generator.Power_proc = (ushort)Convert.ToInt32(registr_user.GetValue("Set_Generator.Power_proc")); }
+
+                if (registr_user.GetValue("Set_Generator.N_step") != null)
+                { Set_Generator.N_step = (ushort)Convert.ToInt32(registr_user.GetValue("Set_Generator.N_step")); }
+
+                if (registr_user.GetValue("Set_Generator.Time_Step") != null)
+                { Set_Generator.Time_Step = (ushort)Convert.ToInt32(registr_user.GetValue("Set_Generator.Time_Step")); }
+
+                if (registr_user.GetValue("Set_Generator.flag_ON_autoTuning_freq") != null)
+                    Set_Generator.flag_ON_autoTuning_freq = (0 < (int)registr_user.GetValue("Set_Generator.flag_ON_autoTuning_freq"))? true: false;
+
+                if (registr_user.GetValue("Set_Generator.flag_ON_generation") != null)
+                    Set_Generator.flag_ON_generation = (0 < (int)registr_user.GetValue("Set_Generator.flag_ON_generation")) ? true : false;
+
+                if (registr_user.GetValue("Set_Generator.flag_ON_scan_freq") != null)
+                    Set_Generator.flag_ON_scan_freq = (0 < (int)registr_user.GetValue("Set_Generator.flag_ON_scan_freq")) ? true : false; ;
+
+                if (registr_user.GetValue("Set_Generator.flag_ON_autoTuning_freq") != null)
+                    Set_Generator.flag_ON_autoTuning_freq = (0 < (int)registr_user.GetValue("Set_Generator.flag_ON_autoTuning_freq")) ? true : false; ;
+
+                if (registr_user.GetValue("path_directory") != null)
+                { path_directory = registr_user.GetValue("path_directory").ToString(); }
+
+                if (registr_user.GetValue("default_com_port") != null)
+                { default_com_port = registr_user.GetValue("default_com_port").ToString(); }
+
+                if (registr_user.GetValue("default_baudrate") != null)
+                { default_baudrate = Convert.ToInt32(registr_user.GetValue("default_baudrate")); }
+            }
+        }
+
         public void add_text_ComPort()
         {
             // чтение портов доступных в системе
@@ -26,12 +99,12 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private void init_COM_port()
         {
             if (listBox_ComPort.Text == "")
-            { serialPort_MB.PortName = "COM8"; }
+            { serialPort_MB.PortName = default_com_port; }
             else
             { serialPort_MB.PortName = listBox_ComPort.Text; }
 
             if (listBox_BaudRate.Text == "")
-            { serialPort_MB.BaudRate = 921600; }
+            { serialPort_MB.BaudRate = default_baudrate; }
             else
             { serialPort_MB.BaudRate = Convert.ToInt32(listBox_BaudRate.Text); }
 
@@ -46,16 +119,17 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
         private void init_Set_Generator()
         {
-            Set_Generator.flag_ON_generation = false;
-            Set_Generator.flag_ON_scan_freq = false;
-            Set_Generator.flag_ON_autoTuning_freq = false;
-            Set_Generator.flag_ON_TxData_cicle = false;
-            Set_Generator.Freq_start = Convert.ToUInt16(textBox_Fstart.Text);
-            Set_Generator.Power_proc = Convert.ToUInt16(textBox_Power.Text);
-            Set_Generator.F_Step = Convert.ToUInt16(textBox_Step.Text);
-            Set_Generator.Time_Step = Convert.ToUInt16(textBox_Tstep.Text);
-            Set_Generator.N_step = Convert.ToUInt16(textBox_NumPoint.Text);
-            Calculate_Fend();
+            // эти данные будут подсасываться из реестра, здесь их надо отрисовать по форме
+            checkBox_ON_gen.Checked = Set_Generator.flag_ON_generation;
+            checkBox_Tx_Data_cicle.Checked = Set_Generator.flag_ON_TxData_cicle;
+            checkBox_ON_scan.Checked = Set_Generator.flag_ON_scan_freq;
+            // todo ==> checkBox_ON_autoTuning_freq.Checked = Set_Generator.flag_ON_autoTuning_freq;
+            textBox_Fstart.Text =  Set_Generator.Freq_start.ToString();
+            textBox_Power.Text =  Set_Generator.Power_proc.ToString();
+            textBox_Step.Text = Set_Generator.F_Step.ToString();
+            textBox_Tstep.Text = Set_Generator.Time_Step.ToString();
+            textBox_NumPoint.Text = Set_Generator.N_step.ToString();
+            Calculate_Fend(); // не храним, вычисляем по месту
         }// private void init_Set_Generator()
 
         void init_chart()

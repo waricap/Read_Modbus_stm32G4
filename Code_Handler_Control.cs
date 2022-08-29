@@ -11,7 +11,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
     public partial class Form1
     {
-        int v_43000 = freq_begin_band + num_point_freq_zamer;
+       
         private void Calculate_Fend()
         {
             label_Fend.Text = "F_end= " + (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step).ToString() +" hz";

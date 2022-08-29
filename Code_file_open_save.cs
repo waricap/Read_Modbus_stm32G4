@@ -13,11 +13,10 @@ using static System.Net.WebRequestMethods;
 namespace Read_Modbus_UsbCDC_stm32G4
 {
 
-
+    
     public partial class Form1
     {
-        private string path_directory = @"C:\Users\" + Environment.UserName + @"\source\repos\Read_Modbus_stm32G4\файлы_замеров_АЧХ";
-        //private string path_directory = @"C:\Users\" + Environment.UserName + @"\Documents\файлы_замеров_АЧХ";
+        
         private void save_data_in_file()
         {
             string text_coment = ""; // используется для формирования поля названия графика в файле перед пакетом данных
@@ -36,6 +35,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             if (saveFileDialog1.ShowDialog() == DialogResult.OK) // отработаем запись данных только если нажата кнопочка ОК в диалоге
             {
                 string patch_file = saveFileDialog1.FileName;   // получаем имя выбранный файл
+                path_directory = Path.GetDirectoryName(patch_file);
+                registr_user.SetValue("path_directory", path_directory);
                 try
                 {
                     StreamWriter temp_write = new StreamWriter(patch_file, false);
@@ -85,6 +86,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 string patch_file = openFileDialog1.FileName;   // получаем имя выбранный файл
+                path_directory = Path.GetDirectoryName(patch_file);
+                registr_user.SetValue("path_directory", path_directory);
+
                 try // StreamReader temp_read = new StreamReader(patch_file);
                 {
                     StreamReader temp_read = new StreamReader(patch_file);
