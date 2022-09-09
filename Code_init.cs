@@ -163,7 +163,12 @@ namespace Read_Modbus_UsbCDC_stm32G4
             info_data_chart[3].listbox_data_graf = listBox4;
             info_data_chart[4].listbox_data_graf = listBox5;
             info_data_chart[5].listbox_data_graf = listBox6;
-
+            info_data_chart[0].checkBox_phase = checkBox1;
+            info_data_chart[1].checkBox_phase = checkBox2;
+            info_data_chart[2].checkBox_phase = checkBox3;
+            info_data_chart[3].checkBox_phase = checkBox4;
+            info_data_chart[4].checkBox_phase = checkBox5;
+            info_data_chart[5].checkBox_phase = checkBox6;
             for (int i=3; i<6; i++)
             {
                 info_data_chart[i].label_name_file = new System.Windows.Forms.Label();

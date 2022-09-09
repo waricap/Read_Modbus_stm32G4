@@ -279,6 +279,11 @@ namespace Read_Modbus_UsbCDC_stm32G4
             button_cicle_read.Enabled = true;
         }
 
+        private void checkBox_Phase_CheckedChanged(object sender, EventArgs e)
+        {
+            otrisovka_graf_listbox(data_freq[0].Fmin, data_freq[0].Fmax); 
+        }
+
 
 
 

@@ -31,11 +31,13 @@ namespace Read_Modbus_UsbCDC_stm32G4
         public Button Button_download;
         public ListBox listbox_data_graf;
         public Label label_name_file;
+        public CheckBox checkBox_phase;
         public info_data_chart_class()
         {
             Button Button_download = new Button();
             ListBox listBox = new ListBox();
             Label label = new Label();
+            CheckBox checkBox_phase = new CheckBox();
         }
     }
     class Class_data :  IComparable  

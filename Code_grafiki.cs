@@ -8,6 +8,7 @@ using System.IO.Ports;
 using Modbus.Device;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace Read_Modbus_UsbCDC_stm32G4
 {
@@ -200,14 +201,29 @@ namespace Read_Modbus_UsbCDC_stm32G4
             {
                 chart1.Series[i].Points.Clear();
                 chart1.ChartAreas[i].AxisX.Maximum = f_max;
+                    data_freq[i].Fmax = (ushort) f_max;
                 chart1.ChartAreas[i].AxisX.Minimum = f_min;
+                    data_freq[i].Fmin = (ushort)f_min;
                 listbox_arr_data_graf[i].Items.Clear();
 
                 for(int j = 0; j < data_freq.Count; j++)
                 {
                     if (data_freq[j].flag_yes)
                     {
-                        chart1.Series[i].Points.AddXY(data_freq[j].Freq, data_freq[j].val[i]);
+                        double temp_float = 0;
+                        double temp_data = 0;
+                        double temp_sin = 0;
+                        double temp_Asin = 0;
+                        if (info_data_chart[i].checkBox_phase.Checked ==true)
+                            {
+                            temp_data = (double) data_freq[j].val[i];
+                            temp_sin = Math.Tan(temp_data);
+                            temp_Asin = Math.Atan(temp_sin);
+                            temp_float = temp_Asin; // Math.Asin(Math.Sin(data_freq[j].val[i]));
+                            }
+                        else
+                            { temp_float = data_freq[j].val[i]; }
+                        chart1.Series[i].Points.AddXY(data_freq[j].Freq, temp_float);
                         s = data_freq[j].form_one_string_ListBox(data_freq[j].Freq, data_freq[j].val[i]);
                         listbox_arr_data_graf[i].Items.Add(s);
                     }
