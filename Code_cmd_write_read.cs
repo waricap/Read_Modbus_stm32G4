@@ -159,6 +159,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             if (Set_Generator.flag_ON_scan_freq) { cmd_write_16[8] +=       (1<<1); }//	Reg_CMD_Buf[0].1 - флаг-команда Вкл. Скольжение по диапазону, в соответствии с задаными регистрами
             if (Set_Generator.flag_ON_TxData_cicle) { cmd_write_16[8] +=    (1<<2); }//	Reg_CMD_Buf[0].2 - флаг-команда Вкл. долбежку передачи данных по кругу, прием при этом прекратиться, стоповать можно будет только синей кнопкой
             if (Set_Generator.flag_ON_autoTuning_freq) { cmd_write_16[8] += (1<<3); }//	Reg_CMD_Buf[0].3 - флаг-команда при включеной генерации автоподстройка частоты будет работать, если включен флаг скольжения, этот флаг игнорится
+            if (Set_Generator.flag_ON_scan_time)       { cmd_write_16[8] += (1<<4); }//	Reg_CMD_Buf[0].4 - флаг-команда на вкл генерации на одной частоте, и циклическую передачу двух сигналов ТОК и НАПРЯЖЕНИЕ в реале, как есть из замера 
+
             cmd_write_16[9] = Convert.ToByte(Set_Generator.Power_proc >> 8);    //	Reg_CMD_Buf[1] - регистр мощности,  2-98% заполнения
             cmd_write_16[10] = Convert.ToByte(Set_Generator.Power_proc & 0xff);
             cmd_write_16[11] = Convert.ToByte(Set_Generator.Freq_start >> 8);   //	Reg_CMD_Buf[2] - регистр стартовой частоты, 14500-43000
@@ -539,6 +541,151 @@ namespace Read_Modbus_UsbCDC_stm32G4
             return;
         } // private string Read_register_scan_freq(ref byte[] array_read, 
 
+        public async Task Read_cicle_scan_time(byte[] cmd_arr)
+        {
+            answer_status_cicles = "OK";
+            int old_CRC = 0;
+
+            init_chart();
+            data_freq.Clear();// очистка
+
+            for (int i = 0; i < 6; i++)
+            {
+                chart1.ChartAreas[i].AxisX.Maximum = 1010;
+                chart1.ChartAreas[i].AxisX.Minimum = 0;
+                //data_freq[i].Fmax = 1024;
+                //data_freq[i].Fmin = 0;
+            }
+            numericUpDown_mouse.Maximum = 1024;
+            numericUpDown_mouse.Minimum = 0;
+            
+
+            // крутимся, выход если прерван поток входной (нажата синяя кнопка )
+            Class_data temp_data = new Class_data();
+            int count_byte_read = 0;
+            uint index_end_recieve = 85;
+            string ex_message = "";
+
+            while (button_stop_read.Enabled == true) // крутится БЕСКОНЕЧНО в этом цикле, пока нажата кнопка
+            {
+                count_byte_read = 0;
+                index_end_recieve = 85;
+                label_error.Text = "читаем поток входных данных";
+                // крутимся , поиск одной посылки
+                await Task.Run(() =>
+                {
+                    try
+                    { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
+                    catch (Exception ex)
+                    { ex_message = ex.Message; }
+                });
+                if (ex_message != "")
+                {
+                    if (serialPort_MB.IsOpen == true) serialPort_MB.Close();
+                    label_error.Text = "Ошибка чтения данных, " + ex_message;
+                    break;
+                }
+
+                while (count_byte_read < index_end_recieve)
+                {
+                    if (array_read[0] == cmd_arr[0]) // adr_slave) // адрес устройства, которое отвечает
+                    {
+                        if (count_byte_read == 0)
+                        { count_byte_read++; }
+                        else
+                        {
+                            if (array_read[1] == cmd_arr[1]) // num_cmd) // код команды, от устройства, как там понято
+                            {
+                                if (count_byte_read == 1)
+                                { count_byte_read++; }
+                                else
+                                {
+                                    if (array_read[2] == 80) // в этом байте длина пакета данных
+                                    { count_byte_read++; }
+                                    else
+                                    { count_byte_read = 0; } // if (array_read[2] == 80) // в этом байте длина пакета данных
+                                }
+                            } // if (massiv_answer[1] == data_PDU[1])
+                            else
+                            { count_byte_read = 0; }
+                        } // if (count_byte_read == 0)
+                    } // if (massiv_answer[0] == data_PDU[0]) 
+                    else
+                    { count_byte_read = 0; }//  else  if (massiv_answer[0] == data_PDU[0]) 
+
+                    // читаем следующий символ
+                    await Task.Run(() =>
+                    {
+                        try
+                        { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
+                        catch (Exception ex)
+                        { ex_message = ex.Message; }
+                    });
+
+                    if (ex_message != "") // а если пришло сообщение об ошибочке чтения
+                    {
+                        if (serialPort_MB.IsOpen == true) serialPort_MB.Close();
+                        label_error.Text = "Ошибка чтения данных, " + ex_message;
+                        break;
+                    }
+                } // while(count_byte_read < index_end_recieve)
+
+                // пакет 80 байт словили, теперь проверка CRC // пакет 80 байт словили, теперь проверка CRC // пакет 80 байт словили, теперь проверка CRC
+                byte crc_0 = array_read[array_read.Length - 3];
+                byte crc_1 = array_read[array_read.Length - 2];
+                Array.Resize(ref array_read, 83);
+                byte[] data_CRC = Modbus.Utility.ModbusUtility.CalculateCrc(array_read);
+                Array.Resize(ref array_read, 86);
+                if (old_CRC != (data_CRC[0] + data_CRC[1]))
+                {
+                    old_CRC = data_CRC[0] + data_CRC[1];
+                    if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1)) // CRC совпал - удача
+                    {
+                        temp_data.clear_data();
+                        ushort t = (ushort)BitConverter.ToSingle(array_read, 3);
+                        temp_data.Freq = t;
+                        for (int i = 6; i < 10; i++)
+                        {
+                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i);
+                            //chart1.Series[i-6].Points.AddXY(temp_data.Freq, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
+                            chart1.Series[i - 6].Points.AddXY(t , temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
+                        }
+                        label_out.Text = t.ToString();
+                        //temp_data.flag_yes = true;// значит для этой частоты пришли данные
+                        //data_freq.Add(new Class_data(temp_data));
+
+                        //// надо крутится до тех пор, пока не будут схвачены концы диапазона
+                        //if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
+                        //if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
+                        //if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) |
+                        //    ((Fmin - 50) <= Set_Generator.Freq_start))
+                        //{
+                        //    if (perwiy_tuk == 0) { data_freq.Clear(); }
+                        //    perwiy_tuk++;
+                        //}
+                        //if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
+                        //        ((Fmin - 50) <= Set_Generator.Freq_start))
+                        //{ break; }
+                        //else
+                        //{
+                        //    if (old_freq != temp_data.Freq)
+                        //    {
+                        //        ik++;
+                        //        old_freq = temp_data.Freq;
+                        //    }
+                        //} // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                    }
+                    else
+                    {
+                        label_out.Text = " проверка CRC - ОШИБКА ";
+                        answer_status_cicles = "ERROR_CRC";
+                    }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                }
+
+
+            }
+
+        }
     } // public partial class Form1
 
 } // namespace Read_Modbus_UsbCDC_stm32G4

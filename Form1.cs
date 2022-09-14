@@ -216,10 +216,18 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private void checkBox_ON_scan_CheckedChanged(object sender, EventArgs e)
         {
             Set_Generator.flag_ON_scan_freq = checkBox_ON_scan.Checked;
+            if (checkBox_ON_scan.Checked) 
+                { checkBox_scan_time.Checked = false; }
             if (checkBox_ON_scan.Checked)
             { registr_user.SetValue("Set_Generator.flag_ON_scan_freq", 1); }
             else
             { registr_user.SetValue("Set_Generator.flag_ON_scan_freq", 0); }
+        }
+        private void checkBox_scan_time_CheckedChanged(object sender, EventArgs e)
+        {
+            Set_Generator.flag_ON_scan_time = checkBox_scan_time.Checked;
+            if (checkBox_scan_time.Checked) 
+                { checkBox_ON_scan.Checked = false; }
         }
 
         private  void button_cicle_read_Click(object sender, EventArgs e)
@@ -230,7 +238,10 @@ namespace Read_Modbus_UsbCDC_stm32G4
             if (serialPort_MB.IsOpen == false)
             { serialPort_MB.Open(); }
             byte[] cmd_read_1 = { 7, 4, 0, 64, 0, 0 }; // для совместимости
-            _ = Read_cicle_scan_freq(cmd_read_1);
+            if(checkBox_ON_scan.Checked)
+                { _ = Read_cicle_scan_freq(cmd_read_1);}
+            if (checkBox_scan_time.Checked)
+                { _ = Read_cicle_scan_time(cmd_read_1); }
         }
 
         private void button_Save_Click(object sender, EventArgs e)
@@ -283,6 +294,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             otrisovka_graf_listbox(data_freq[0].Fmin, data_freq[0].Fmax); 
         }
+
 
 
 

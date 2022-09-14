@@ -212,19 +212,23 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     {
                         double temp_float = 0;
                         double temp_data = 0;
-                        double temp_sin = 0;
-                        double temp_Asin = 0;
+                        double temp_tan = 0;
+                        double temp_Atan = 0;
                         if (info_data_chart[i].checkBox_phase.Checked ==true)
                             {
                             temp_data = (double) data_freq[j].val[i];
-                            temp_sin = Math.Tan(temp_data);
-                            temp_Asin = Math.Atan(temp_sin);
-                            temp_float = temp_Asin; // Math.Asin(Math.Sin(data_freq[j].val[i]));
+                            while (temp_data > Math.PI/2) { temp_data = temp_data - Math.PI/2; }
+                            while (temp_data < 0 ) { temp_data = temp_data + Math.PI/2; }
+                            temp_tan = Math.Tan(temp_data);
+                            temp_Atan = Math.Atan(temp_tan);
+                            temp_float = temp_data;// temp_Atan; 
                             }
                         else
                             { temp_float = data_freq[j].val[i]; }
+
+
                         chart1.Series[i].Points.AddXY(data_freq[j].Freq, temp_float);
-                        s = data_freq[j].form_one_string_ListBox(data_freq[j].Freq, data_freq[j].val[i]);
+                        s = data_freq[j].form_one_string_ListBox(data_freq[j].Freq, (float) temp_float); //data_freq[j].val[i]);
                         listbox_arr_data_graf[i].Items.Add(s);
                     }
                 }
