@@ -217,8 +217,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         if (info_data_chart[i].checkBox_phase.Checked ==true)
                             {
                             temp_data = (double) data_freq[j].val[i];
-                            while (temp_data > Math.PI/2) { temp_data = temp_data - Math.PI/2; }
-                            while (temp_data < 0 ) { temp_data = temp_data + Math.PI/2; }
+                            while (temp_data > 0) { temp_data = temp_data - 2*Math.PI; }
+                            while (temp_data < (-2*Math.PI)) { temp_data = temp_data + 2*Math.PI; }
                             temp_tan = Math.Tan(temp_data);
                             temp_Atan = Math.Atan(temp_tan);
                             temp_float = temp_data;// temp_Atan; 
