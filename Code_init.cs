@@ -8,6 +8,7 @@ using System.Drawing;
 using Modbus.Device;
 using Microsoft.Win32;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Read_Modbus_UsbCDC_stm32G4
 {
@@ -150,6 +151,40 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 { numericUpDown_mouse.Value = freq_begin_band; }
             else
                 { numericUpDown_mouse.Value = Set_Generator.Freq_start; }
+
+            // добавим накладные графики
+            //ChartArea chartArea107 = chart1.ChartAreas[0];// new ChartArea();
+            //chartArea107.Name = "ChartArea107";
+            //chart1.ChartAreas.Add(chartArea107);
+            //ChartArea chartArea108 = chart1.ChartAreas[1];
+            //chartArea108.Name = "ChartArea108";
+            //chart1.ChartAreas.Add(chartArea108);
+            //ChartArea chartArea109 = chart1.ChartAreas[2];
+            //chartArea109.Name = "ChartArea109";
+            //chart1.ChartAreas.Add(chartArea109);
+            //ChartArea chartArea110 = chart1.ChartAreas[3];
+            //chartArea110.Name = "ChartArea110";
+            //chart1.ChartAreas.Add(chartArea110);
+
+            //Series series107 = chart1.Series[0];
+            //series107.BorderWidth =1;
+            //series107.ChartArea = "ChartArea107";
+            //chart1.Series.Add(series107);
+
+            //Series series108 = chart1.Series[1];
+            //series108.BorderWidth = 1;
+            //series108.ChartArea = "ChartArea108";
+            //chart1.Series.Add(series108);
+
+            //Series series109 = chart1.Series[2];
+            //series109.BorderWidth = 1;
+            //series109.ChartArea = "ChartArea109";
+            //chart1.Series.Add(series109);
+
+            //Series series110 = chart1.Series[3];
+            //series110.BorderWidth = 1;
+            //series110.ChartArea = "ChartArea110";
+            //chart1.Series.Add(series110);
         }
 
         void init_info_data_chart()

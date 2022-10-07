@@ -269,6 +269,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             button_stop_read.Enabled=false;
             button_cicle_read.Enabled =true;
+            serialPort_MB.Close();
         }
 
 

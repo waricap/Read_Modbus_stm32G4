@@ -82,7 +82,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             string stroka_ListBox ="";
             //if ((num < max_chanel_zamer) && (flag_yes == true)) 
             //    { stroka_ListBox = Freq.ToString("D5") + "= " + val[num].ToString() + "\n"; }
-            stroka_ListBox = F_num.ToString("D5") + "= " + val_num.ToString() + "\n";
+            stroka_ListBox = F_num.ToString("D5") + "= " + val_num.ToString() + Environment.NewLine;
             return stroka_ListBox;
         }
         public string form_one_string_file()
