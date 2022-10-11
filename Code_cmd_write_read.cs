@@ -542,11 +542,54 @@ namespace Read_Modbus_UsbCDC_stm32G4
             return;
         } // private string Read_register_scan_freq(ref byte[] array_read, 
 
-        public async Task Read_cicle_scan_time(byte[] cmd_arr)
-        {
-            answer_status_cicles = "OK";
-            int old_CRC = 0;
 
+
+        Thread thread_read;
+        Thread  thread_pererisovka;
+
+
+        public void pererisovka_graf_scan_time()
+        {
+            // вот если пошли посылки сначала, перерисовываем все, это тут
+            for (int i = 0; i < 4; i++)
+            {
+                //chart1.series[i].points.clear();
+                //chart1.series[i + 12].points.clear();
+                //for (int k = 0; k < 1010; k++)
+                //{
+                //    listbox_arr_data_graf[i].items[k] = k.tostring("d4") + "= " + arr_data_time[i, k].tostring() + environment.newline;
+                //    if (arr_data_time[i, k] != 0)
+                //    {
+                //        chart1.series[i + 12].points.addxy(k, arr_data_time[i, k]);
+                //        if (series_minmax[i] < math.abs(arr_data_time[i, k])) { series_minmax[i] = math.abs(arr_data_time[i, k]); }
+                //        arr_data_time[i, k] = 0;
+                //    }
+                //}
+                //// нарисуем график работы ключей
+                //int ser_i = i + 6;
+                //chart1.series[ser_i].points.clear();
+                //for (int k = 0; k < 17; k++)
+                //{
+                //    for (int m = 0; m < 64; m++)
+                //    {
+                //        temp_y = 0;
+                //        temp_i = 32 * set_generator.power_proc / 100;
+                //        if (m < temp_i) { temp_y = -series_minmax[i]; }
+                //        if ((m < temp_i + 32) & (m > 31)) { temp_y = series_minmax[i]; }
+                //        temp_x = m + k * 64 - 16;
+                //        if ((temp_x >= 0) & (temp_x < 1010)) { chart1.series[ser_i].points.addxy(temp_x, temp_y); }
+                //    }
+                //}
+            }
+
+            old_number_read_paket_time = number_read_paket_time;
+            label_out.Text = number_read_paket_time.ToString();
+
+            thread_pererisovka.Abort();
+        }
+
+        public void Read_cicle_scan_time(byte[] cmd_arr)
+        {
             init_chart();
             data_freq.Clear();// очистка
 
@@ -554,8 +597,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             {
                 chart1.ChartAreas[i].AxisX.Maximum = 1010;
                 chart1.ChartAreas[i].AxisX.Minimum = 0;
-                //data_freq[i].Fmax = 1024;
-                //data_freq[i].Fmin = 0;
+                chart1.ChartAreas[i].AxisX2.Maximum = 1010;
+                chart1.ChartAreas[i].AxisX2.Minimum = 0;
             }
             // подготовим ListBox все для работы в режиме скан по времени
             for (int i = 0; i < 6; i++)
@@ -586,7 +629,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     for (int i = 0; i < 64; i++)
                     {
                         temp_y = 0;
-                        temp_i = 32 * Set_Generator.Power_proc / 100;
+                        //temp_i = 32 * Set_Generator.Power_proc / 100;
+                        temp_i = 64 * Set_Generator.Power_proc / 100;
                         if (i < temp_i) { temp_y = -1; }
                         if ((i < temp_i+32) & (i>31)) { temp_y = 1; }
                         temp_x = i + k * 64 - 18;
@@ -597,37 +641,47 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
             numericUpDown_mouse.Maximum = 1024;
             numericUpDown_mouse.Minimum = 0;
-            
 
+            thread_read = new Thread(thread_read_scan_time);
+            thread_read.Start();
+
+            // крутимся, выход если прерван поток входной(нажата синяя кнопка)
+            //Class_data temp_data = new Class_data();
+            //float[,] arr_data_time = new float[6, 1024];
+
+        }
+
+        ushort number_read_paket_time=0;
+        ushort old_number_read_paket_time = 0;
+        void thread_read_scan_time()
+        {
             // крутимся, выход если прерван поток входной (нажата синяя кнопка )
             Class_data temp_data = new Class_data();
             int count_byte_read = 0;
             uint index_end_recieve = 85;
             string ex_message = "";
-            int old_t = 0;
+            int old_CRC = 0;
             float[,] arr_data_time = new float[6, 1024];
+            float[] series_minmax = new float[4] { 1, 1, 1, 1 };
 
-            while (button_stop_read.Enabled == true) // крутится БЕСКОНЕЧНО в этом цикле, пока нажата кнопка
+            while (button_stop_read.Enabled == true) // крутится БЕСКОНЕЧНО в этом цикле, пока нажата кнопк
             {
                 count_byte_read = 0;
                 index_end_recieve = 85;
-                label_error.Text = "читаем поток входных данных";
                 // крутимся , поиск одной посылки
-                await Task.Run(() =>
-                {
                     try
                     { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
                     catch (Exception ex)
                     { ex_message = ex.Message; }
-                });
+
                 if (ex_message != "")
                 {
                     if (serialPort_MB.IsOpen == true) serialPort_MB.Close();
-                    label_error.Text = "Ошибка чтения данных, " + ex_message;
+                    Invoke(new Action(() => label_error.Text = "Ошибка чтения данных, " + ex_message));
                     break;
                 }
 
-                while (count_byte_read < index_end_recieve-1)
+                while (count_byte_read < index_end_recieve - 1)
                 {
                     if (array_read[0] == 7) //cmd_arr[0]) // adr_slave) // адрес устройства, которое отвечает
                     {
@@ -642,26 +696,23 @@ namespace Read_Modbus_UsbCDC_stm32G4
                                 else
                                 {
                                     if (array_read[2] == 80) // в этом байте длина пакета данных
-                                    { count_byte_read++;}
+                                    { count_byte_read++; }
                                     else
-                                    { count_byte_read = 0;  } // if (array_read[2] == 80) // в этом байте длина пакета данных
+                                    { count_byte_read = 0; } // if (array_read[2] == 80) // в этом байте длина пакета данных
                                 }
                             } // if (massiv_answer[1] == data_PDU[1])
                             else
-                            { count_byte_read = 0;  }
+                            { count_byte_read = 0; }
                         } // if (count_byte_read == 0)
                     } // if (massiv_answer[0] == data_PDU[0]) 
                     else
-                    { count_byte_read = 0;  }//  else  if (massiv_answer[0] == data_PDU[0]) 
+                    { count_byte_read = 0; }//  else  if (massiv_answer[0] == data_PDU[0]) 
 
                     // читаем следующий символ
-                    await Task.Run(() =>
-                    {
                         try
                         { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
                         catch (Exception ex)
                         { ex_message = ex.Message; }
-                    });
 
                     if (ex_message != "") // а если пришло сообщение об ошибочке чтения
                     {
@@ -670,7 +721,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                         break;
                     }
                 } // while(count_byte_read < index_end_recieve)
-                
+
                 // пакет 80 байт словили, теперь проверка CRC // пакет 80 байт словили, теперь проверка CRC // пакет 80 байт словили, теперь проверка CRC
                 byte crc_0 = array_read[array_read.Length - 3];
                 byte crc_1 = array_read[array_read.Length - 2];
@@ -684,88 +735,39 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     {
                         temp_data.clear_data();
                         ushort t = (ushort)(BitConverter.ToSingle(array_read, 3)); // это есть индекс пришедшего пакета, по времени
+                        number_read_paket_time = t;
                         temp_data.Freq = t;
                         for (int i = 0; i < 4; i++) // i - номер графика = i-1
                         {
-                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i*2);
+                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * i * 2);
                             arr_data_time[i, t] = temp_data.val[i];
-                            chart1.Series[i].Points.AddXY(t , temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
-                            listbox_arr_data_graf[i].Items[t] = t.ToString("D4") + "= " + temp_data.val[i].ToString() + Environment.NewLine;
+                            Invoke(new Action(() => chart1.Series[i].Points.AddXY(t, temp_data.val[i]))); // там происходит каша, зато наглядно - прием идет
+                            Invoke(new Action(() => listbox_arr_data_graf[i].Items[t] = t.ToString("D4") + "= " + temp_data.val[i].ToString() + Environment.NewLine));
 
-                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * (2*i+1));
-                            arr_data_time[i, t+1] = temp_data.val[i];
-                            chart1.Series[i].Points.AddXY(t+1, temp_data.val[i]); // там происходит каша, зато наглядно - прием идет
-                            listbox_arr_data_graf[i].Items[t+1] = (t+1).ToString("D4") + "= " + temp_data.val[i].ToString() + Environment.NewLine;
+                            temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * (2 * i + 1));
+                            arr_data_time[i, t + 1] = temp_data.val[i];
+                            Invoke(new Action(() => chart1.Series[i].Points.AddXY(t + 1, temp_data.val[i]))); // там происходит каша, зато наглядно - прием идет
+                            Invoke(new Action(() => listbox_arr_data_graf[i].Items[t + 1] = (t + 1).ToString("D4") + "= " + temp_data.val[i].ToString() + Environment.NewLine));
                         }
-                        if (old_t > t)
-                        {// вот если пошли посылки сначала, перерисовываем все, это тут
-                            for (int i = 0; i < 4; i++)
-                            { 
-                                chart1.Series[i].Points.Clear();
-                                chart1.Series[i+12].Points.Clear();
-                                for (int k = 0; k < 1010; k++)
-                                {
-                                    listbox_arr_data_graf[i].Items[k] = k.ToString("D4") + "= " + arr_data_time[i, k].ToString() + Environment.NewLine;
-                                    if (arr_data_time[i, k] != 0) 
-                                    {  
-                                        chart1.Series[i+12].Points.AddXY(k, arr_data_time[i, k]);
-                                        if (series_minmax[i] < Math.Abs( arr_data_time[i, k])) { series_minmax[i] = Math.Abs(arr_data_time[i, k]); }
-                                        arr_data_time[i, k] = 0;
-                                    }
-                                }
-                                // нарисуем график работы ключей
-                                int ser_i = i+6; 
-                                    chart1.Series[ser_i].Points.Clear();
-                                    for (int k = 0; k < 17; k++)
-                                    {
-                                        for (int m = 0; m < 64; m++)
-                                        {
-                                            temp_y = 0;
-                                            temp_i = 32 * Set_Generator.Power_proc / 100;
-                                            if (m < temp_i) { temp_y = -series_minmax[i]; }
-                                            if ((m < temp_i + 32) & (m > 31)) { temp_y = series_minmax[i]; }
-                                            temp_x = m + k * 64 - 16;
-                                            if ((temp_x >= 0) & (temp_x < 1010)) { chart1.Series[ser_i].Points.AddXY(temp_x, temp_y); }
-                                        }
-                                    }
-                            }
+                        if (old_number_read_paket_time > number_read_paket_time)
+                        {
+
                         }
-                        old_t = t;
-                        label_out.Text = t.ToString();
+                        old_number_read_paket_time = number_read_paket_time;
 
-                        //temp_data.flag_yes = true;// значит для этой частоты пришли данные
-                        //data_freq.Add(new Class_data(temp_data));
+                        thread_pererisovka = new Thread(pererisovka_graf_scan_time);
+                        thread_pererisovka.Start(); 
 
-                        //// надо крутится до тех пор, пока не будут схвачены концы диапазона
-                        //if (temp_data.Freq > Fmax) { Fmax = temp_data.Freq; }
-                        //if (temp_data.Freq < Fmin) { Fmin = temp_data.Freq; }
-                        //if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) |
-                        //    ((Fmin - 50) <= Set_Generator.Freq_start))
-                        //{
-                        //    if (perwiy_tuk == 0) { data_freq.Clear(); }
-                        //    perwiy_tuk++;
-                        //}
-                        //if (((Fmax + 50) >= (Set_Generator.Freq_start + Set_Generator.F_Step * Set_Generator.N_step)) &
-                        //        ((Fmin - 50) <= Set_Generator.Freq_start))
-                        //{ break; }
-                        //else
-                        //{
-                        //    if (old_freq != temp_data.Freq)
-                        //    {
-                        //        ik++;
-                        //        old_freq = temp_data.Freq;
-                        //    }
-                        //} // if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
+                        Invoke(new Action(() => label_out.Text = t.ToString()));
                     }
                     else
                     {
-                        label_out.Text = " проверка CRC - ОШИБКА ";
+                        Invoke(new Action(() => label_out.Text = " проверка CRC - ОШИБКА "));
                         answer_status_cicles = "ERROR_CRC";
                     }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                 }
-
-
             }
+            thread_read.Abort();
 
         }
     } // public partial class Form1

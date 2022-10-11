@@ -240,8 +240,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             byte[] cmd_read_1 = { 7, 4, 0, 64, 0, 0 }; // для совместимости
             if(checkBox_ON_scan.Checked)
                 { _ = Read_cicle_scan_freq(cmd_read_1);}
-            if (checkBox_scan_time.Checked)
-                { _ = Read_cicle_scan_time(cmd_read_1); }
+ //           if (checkBox_scan_time.Checked)
+ //               { _ = Read_cicle_scan_time(cmd_read_1); }
         }
 
         private void button_Save_Click(object sender, EventArgs e)
