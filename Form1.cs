@@ -35,8 +35,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
         private Set_Generator_struct Set_Generator = new Set_Generator_struct();
         private List<info_data_chart_class> info_data_chart = new List<info_data_chart_class>();
         private string path_directory = "";
-        private string default_com_port = "";
-        private int default_baudrate;
+        private string default_com_port_MB = "";
+        private string default_com_port_read_data = "";
+        private int default_baudrate_MB;
         private int v_43000;
         public Form1()
         {
@@ -295,6 +296,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             otrisovka_graf_listbox(data_freq[0].Fmin, data_freq[0].Fmax); 
         }
+
 
 
 

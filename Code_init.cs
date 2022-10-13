@@ -32,8 +32,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
             Set_Generator.flag_ON_scan_freq = false;
             Set_Generator.flag_ON_autoTuning_freq = false;
             path_directory = @"C:\Users\" + Environment.UserName + @"\source\repos\Read_Modbus_stm32G4\файлы_замеров_АЧХ";
-            default_com_port = "COM1";
-            default_baudrate = 921600;
+            default_com_port_MB = "COM1";
+            default_com_port_read_data = "COM2";
+            default_baudrate_MB = 921600;
 
             // а теперь читаем, если там есть что осмысленное, переназначить
              registr_user = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\" + GetType().Namespace, true);
@@ -80,10 +81,13 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 { path_directory = registr_user.GetValue("path_directory").ToString(); }
 
                 if (registr_user.GetValue("default_com_port") != null)
-                { default_com_port = registr_user.GetValue("default_com_port").ToString(); }
+                { default_com_port_MB = registr_user.GetValue("default_com_port").ToString(); }
 
                 if (registr_user.GetValue("default_baudrate") != null)
-                { default_baudrate = Convert.ToInt32(registr_user.GetValue("default_baudrate")); }
+                { default_baudrate_MB = Convert.ToInt32(registr_user.GetValue("default_baudrate")); }
+
+                if (registr_user.GetValue("default_com_port_read_data") != null)
+                { default_com_port_read_data = registr_user.GetValue("default_com_port_read_data").ToString(); }
             }
         }
 
@@ -93,21 +97,33 @@ namespace Read_Modbus_UsbCDC_stm32G4
             string[] ports = SerialPort.GetPortNames();
             // Очистка содержимого бокса
             listBox_ComPort.Items.Clear();
+            listBox_COM_read.Items.Clear();
             // Добавление найденных портов в бокс
             listBox_ComPort.Items.AddRange(ports);
+            listBox_COM_read.Items.AddRange(ports);
             label_ComPort.Text = serialPort_MB.PortName;
         } // public void add_text_ComPort()
         private void init_COM_port()
         {
             if (listBox_ComPort.Text == "")
-            { serialPort_MB.PortName = default_com_port; }
+            { serialPort_MB.PortName = default_com_port_MB; }
             else
             { serialPort_MB.PortName = listBox_ComPort.Text; }
 
             if (listBox_BaudRate.Text == "")
-            { serialPort_MB.BaudRate = default_baudrate; }
+            { serialPort_MB.BaudRate = default_baudrate_MB; }
             else
             { serialPort_MB.BaudRate = Convert.ToInt32(listBox_BaudRate.Text); }
+
+            if (listBox_COM_read.Text == "")
+            { serialPort_read_data.PortName = default_com_port_read_data; }
+            else
+            { serialPort_read_data.PortName = listBox_COM_read.Text; }
+
+            if (listBox_COM_read.Text == "")
+            { serialPort_read_data.BaudRate = default_baudrate_MB; }
+            else
+            { serialPort_read_data.BaudRate = Convert.ToInt32(listBox_BaudRate.Text); }
 
             serialPort_MB.DataBits = 8;
             serialPort_MB.ReadTimeout = 1000;
@@ -116,6 +132,12 @@ namespace Read_Modbus_UsbCDC_stm32G4
             serialPort_MB.StopBits = StopBits.One;
             serialPort_MB.RtsEnable = true;
             label_baudrate.Text = serialPort_MB.BaudRate.ToString();
+            serialPort_read_data.DataBits = 8;
+            serialPort_read_data.ReadTimeout = 1000;
+            serialPort_read_data.WriteTimeout = 500;
+            serialPort_read_data.Parity = Parity.None;
+            serialPort_read_data.StopBits = StopBits.One;
+            serialPort_read_data.RtsEnable = true;
         } // private void init_COM_port()
 
         private void init_Set_Generator()
