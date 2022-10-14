@@ -67,7 +67,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             init_Set_Generator();
 
             // вначале, чтобы не тыкать лишний раз
-            init_COM_port();
+            init_COM_port_MB();
             // чтение портов доступных в системе
             // и сформировать listBox_ComPort - на выбор
             add_text_ComPort();  // при работе, во время наведения мыши, тоже будет отрабатывать
@@ -106,6 +106,11 @@ namespace Read_Modbus_UsbCDC_stm32G4
             read_ONE(); // прочитатать состояние регистров генератора
         } // private void button_read_ONE_Click(object sender, EventArgs e)
 
+        private void button_on_gen_scan_Click(object sender, EventArgs e)
+        {
+            start_gen_scan(); // после старта , приемник на генераторе отключается, стоповать только синей кнопкой
+        }
+
         private void listBox_BaudRate_SelectedValueChanged(object sender, EventArgs e)
         {
             serialPort_MB.BaudRate = Convert.ToInt32(listBox_BaudRate.SelectedItem.ToString());
@@ -118,12 +123,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
             registr_user.SetValue("default_com_port", serialPort_MB.PortName);
             label_ComPort.Text = serialPort_MB.PortName;
         }
-        private void button_on_gen_scan_Click(object sender, EventArgs e)
+
+
+        private void listBox_COM_read_SelectedValueChanged(object sender, EventArgs e)
         {
-            start_gen_scan(); // после старта , приемник на генераторе отключается, стоповать только синей кнопкой
+            serialPort_read_data.PortName = listBox_COM_read.SelectedItem.ToString();
+            registr_user.SetValue("default_com_port_read_data", serialPort_read_data.PortName);
+            label_COM_read.Text = serialPort_read_data.PortName;
         }
-
-
 
         private void listBox_ComPort_MouseEnter(object sender, EventArgs e)
         {
@@ -136,6 +143,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             //listBox_ComPort.Items.AddRange(ports);
             //label_ComPort.Text = serialPort_MB.PortName;
         }
+
+
         private void textBox_Fstart_Leave(object sender, EventArgs e)
         {
             textBox_Fstart.Text = Freq_TextBox(textBox_Fstart.Text);
@@ -233,11 +242,11 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
         private  void button_cicle_read_Click(object sender, EventArgs e)
         {
-            init_COM_port();
+            init_COM_port_MB();
             button_stop_read.Enabled = true;
             button_cicle_read.Enabled = false;
-            if (serialPort_MB.IsOpen == false)
-            { serialPort_MB.Open(); }
+            if (serialPort_read_data.IsOpen == false)
+            { serialPort_read_data.Open(); }
             byte[] cmd_read_1 = { 7, 4, 0, 64, 0, 0 }; // для совместимости
             if(checkBox_ON_scan.Checked)
                 { _ = Read_cicle_scan_freq(cmd_read_1);}
@@ -270,7 +279,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             button_stop_read.Enabled=false;
             button_cicle_read.Enabled =true;
-            serialPort_MB.Close();
+            serialPort_read_data.Close();
         }
 
 
@@ -296,6 +305,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             otrisovka_graf_listbox(data_freq[0].Fmin, data_freq[0].Fmax); 
         }
+
 
 
 

@@ -70,7 +70,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             Array.Copy(data_CRC, 0, cmd_read_1, (cmd_read_1.Length - 2), data_CRC.Length);
 
             byte[] read_data = new byte[256];
-            init_COM_port();
+            init_COM_port_MB();
             if (serialPort_MB.IsOpen == false)
             { serialPort_MB.Open(); }
 
@@ -179,7 +179,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
             try
             {
-                init_COM_port();
+                init_COM_port_MB();
                 if (serialPort_MB.IsOpen == false)
                 { serialPort_MB.Open(); }
                 serialPort_MB.Write(cmd_write_16, 0, cmd_write_16.Length);
@@ -284,105 +284,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
         public byte[] array_read = new byte[86]; // массив полученых в ответ данных, STM долбит непрерывно
 
-       // private async Task<byte[]> Async_Read_one_paket(byte adr_slave, byte num_cmd)
-       //private async byte[] Async_Read_one_paket(byte adr_slave, byte num_cmd)
-       // {
-       //     int count_byte_read = 0;
-       //     uint index_end_recieve = 85;
-       //     // крутимся , поиск одной посылки
-       //     Array.Resize(ref array_read, 86);
-       //     try
-       //     {
-       //         await Task.Run(() =>
-       //         array_read[0] = (byte)serialPort_MB.BaseStream.ReadByte()) ; 
-       //     }
-       //     catch (Exception ex)
-       //     {
-       //         label_error.Text = ex.Message;
-       //         serialPort_MB.Close();
-       //         return array_read;
-       //     }
-
-
-       //     while (count_byte_read < index_end_recieve)
-       //     {
-       //         if (array_read[0] == adr_slave) // адрес устройства, которое отвечает
-       //         {
-       //             if (count_byte_read == 0)
-       //             {
-       //               count_byte_read = 1;
-       //                 try
-       //                 { await Task.Run(() => array_read[1] = (byte)serialPort_MB.BaseStream.ReadByte()); }
-       //                 catch (Exception ex)
-       //                 {
-       //                     label_error.Text = ex.Message;
-       //                     serialPort_MB.Close();
-       //                     break;
-       //                 }
-       //             }
-       //             else
-       //             {
-       //                 if (array_read[1] == num_cmd) // код команды, от устройства, как там понято
-       //                 {
-       //                     if (count_byte_read == 1)
-       //                     {
-       //                        count_byte_read++;
-       //                         try
-       //                         { await Task.Run(() => array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte()); }
-       //                         catch (Exception ex)
-       //                         {
-       //                             label_error.Text = ex.Message;
-       //                             serialPort_MB.Close();
-       //                             break;
-       //                         }
-       //                     }
-       //                     else
-       //                     {
-       //                         if (array_read[2] == 80) // в этом байте длина пакета данных
-       //                         {
-       //                             if (count_byte_read < (index_end_recieve - 1))
-       //                             {
-       //                               count_byte_read++;
-       //                                 try
-       //                                 { await Task.Run(() => array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte()); }
-       //                                 catch (Exception ex)
-       //                                 {
-       //                                     label_error.Text = ex.Message;
-       //                                     serialPort_MB.Close();
-       //                                     break;
-       //                                 }
-       //                             }
-       //                             else
-       //                             { count_byte_read++; } //  if (count_byte_read < (index_end_recieve-1))
-       //                         }
-       //                         else
-       //                         {
-       //                            count_byte_read = 0;
-       //                         } // if (array_read[2] == 80) // в этом байте длина пакета данных
-       //                     } // if (count_byte_read == 1)
-       //                 } // if (massiv_answer[1] == data_PDU[1])
-       //                 else
-       //                 {
-       //                    count_byte_read = 0;
-       //                 }
-       //             } // if (count_byte_read == 0)
-       //         } // if (massiv_answer[0] == data_PDU[0]) 
-       //         else
-       //         {
-       //            count_byte_read = 0;
-       //             try
-       //             { await Task.Run(() => array_read[0] = (byte)serialPort_MB.BaseStream.ReadByte()); }
-       //             catch (Exception ex)
-       //             {
-       //                 label_error.Text = ex.Message;
-       //                 serialPort_MB.Close();
-       //                 break;
-       //             }
-       //         }//  else  if (massiv_answer[0] == data_PDU[0]) 
-       //     } // while(count_byte_read < index_end_recieve)
-       //     return array_read;
-       // }
-
         public async Task Read_cicle_scan_freq(byte[] cmd_arr) // массив-команда, которая ушла по модбусу
         {
             answer_status_cicles = "OK";
@@ -412,13 +313,13 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 await Task.Run(() =>
                 {
                     try
-                    { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
+                    { array_read[count_byte_read] = (byte)serialPort_read_data.BaseStream.ReadByte(); }
                     catch (Exception ex)
                     { ex_message = ex.Message; }
                 });
                 if (ex_message != "")  
                 {
-                    if (serialPort_MB.IsOpen == true) serialPort_MB.Close();
+                    if (serialPort_read_data.IsOpen == true) serialPort_read_data.Close();
                     label_error.Text = "Ошибка чтения данных, " + ex_message;
                     break;
                 }
@@ -455,14 +356,14 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     await Task.Run(() =>
                     {
                         try
-                        { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
+                        { array_read[count_byte_read] = (byte)serialPort_read_data.BaseStream.ReadByte(); }
                         catch (Exception ex)
                         { ex_message = ex.Message; }
                     });
 
                     if (ex_message != "") // а если пришло сообщение об ошибочке чтения
                     {
-                        if (serialPort_MB.IsOpen == true) serialPort_MB.Close();
+                        if (serialPort_read_data.IsOpen == true) serialPort_read_data.Close();
                         label_error.Text = "Ошибка чтения данных, " + ex_message;
                         break;
                     }
@@ -520,7 +421,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
                     }// else  if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1))
                 }
             }//while (true)
-            serialPort_MB.Close();
+            serialPort_read_data.Close();
             data_freq.Sort(); // убрать дублирующие , отсортровать
 
             //  data_freq.Distinct  - удаление дублирующих старым дедовским способом,  !! после сортировки
@@ -670,13 +571,13 @@ namespace Read_Modbus_UsbCDC_stm32G4
                 index_end_recieve = 85;
                 // крутимся , поиск одной посылки
                     try
-                    { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
+                    { array_read[count_byte_read] = (byte)serialPort_read_data.BaseStream.ReadByte(); }
                     catch (Exception ex)
                     { ex_message = ex.Message; }
 
                 if (ex_message != "")
                 {
-                    if (serialPort_MB.IsOpen == true) serialPort_MB.Close();
+                    if (serialPort_read_data.IsOpen == true) serialPort_read_data.Close();
                     Invoke(new Action(() => label_error.Text = "Ошибка чтения данных, " + ex_message));
                     break;
                 }
@@ -710,13 +611,13 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
                     // читаем следующий символ
                         try
-                        { array_read[count_byte_read] = (byte)serialPort_MB.BaseStream.ReadByte(); }
+                        { array_read[count_byte_read] = (byte)serialPort_read_data.BaseStream.ReadByte(); }
                         catch (Exception ex)
                         { ex_message = ex.Message; }
 
                     if (ex_message != "") // а если пришло сообщение об ошибочке чтения
                     {
-                        if (serialPort_MB.IsOpen == true) serialPort_MB.Close();
+                        if (serialPort_read_data.IsOpen == true) serialPort_read_data.Close();
                         label_error.Text = "Ошибка чтения данных, " + ex_message;
                         break;
                     }

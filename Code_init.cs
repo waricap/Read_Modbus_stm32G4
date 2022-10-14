@@ -102,8 +102,9 @@ namespace Read_Modbus_UsbCDC_stm32G4
             listBox_ComPort.Items.AddRange(ports);
             listBox_COM_read.Items.AddRange(ports);
             label_ComPort.Text = serialPort_MB.PortName;
+            label_COM_read.Text = serialPort_read_data.PortName;
         } // public void add_text_ComPort()
-        private void init_COM_port()
+        private void init_COM_port_MB()
         {
             if (listBox_ComPort.Text == "")
             { serialPort_MB.PortName = default_com_port_MB; }
@@ -115,6 +116,17 @@ namespace Read_Modbus_UsbCDC_stm32G4
             else
             { serialPort_MB.BaudRate = Convert.ToInt32(listBox_BaudRate.Text); }
 
+            serialPort_MB.DataBits = 8;
+            serialPort_MB.ReadTimeout = 1000;
+            serialPort_MB.WriteTimeout = 500;
+            serialPort_MB.Parity = Parity.None;
+            serialPort_MB.StopBits = StopBits.One;
+            serialPort_MB.RtsEnable = true;
+            label_baudrate.Text = serialPort_MB.BaudRate.ToString();
+        } // private void init_COM_port()
+
+        private void init_COM_read()
+        {
             if (listBox_COM_read.Text == "")
             { serialPort_read_data.PortName = default_com_port_read_data; }
             else
@@ -125,13 +137,6 @@ namespace Read_Modbus_UsbCDC_stm32G4
             else
             { serialPort_read_data.BaudRate = Convert.ToInt32(listBox_BaudRate.Text); }
 
-            serialPort_MB.DataBits = 8;
-            serialPort_MB.ReadTimeout = 1000;
-            serialPort_MB.WriteTimeout = 500;
-            serialPort_MB.Parity = Parity.None;
-            serialPort_MB.StopBits = StopBits.One;
-            serialPort_MB.RtsEnable = true;
-            label_baudrate.Text = serialPort_MB.BaudRate.ToString();
             serialPort_read_data.DataBits = 8;
             serialPort_read_data.ReadTimeout = 1000;
             serialPort_read_data.WriteTimeout = 500;

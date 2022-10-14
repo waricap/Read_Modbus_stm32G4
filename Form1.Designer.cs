@@ -111,6 +111,7 @@
             this.checkBox_scan_time = new System.Windows.Forms.CheckBox();
             this.listBox_COM_read = new System.Windows.Forms.ListBox();
             this.serialPort_read_data = new System.IO.Ports.SerialPort(this.components);
+            this.label_COM_read = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_mouse)).BeginInit();
             this.SuspendLayout();
@@ -462,7 +463,7 @@
             // label_ComPort
             // 
             this.label_ComPort.AutoSize = true;
-            this.label_ComPort.Location = new System.Drawing.Point(12, 181);
+            this.label_ComPort.Location = new System.Drawing.Point(12, 184);
             this.label_ComPort.Name = "label_ComPort";
             this.label_ComPort.Size = new System.Drawing.Size(35, 13);
             this.label_ComPort.TabIndex = 13;
@@ -864,6 +865,7 @@
             this.listBox_COM_read.Name = "listBox_COM_read";
             this.listBox_COM_read.Size = new System.Drawing.Size(55, 69);
             this.listBox_COM_read.TabIndex = 51;
+            this.listBox_COM_read.SelectedValueChanged += new System.EventHandler(this.listBox_COM_read_SelectedValueChanged);
             this.listBox_COM_read.MouseEnter += new System.EventHandler(this.listBox_ComPort_MouseEnter);
             // 
             // serialPort_read_data
@@ -871,11 +873,21 @@
             this.serialPort_read_data.BaudRate = 921600;
             this.serialPort_read_data.PortName = "COM2";
             // 
+            // label_COM_read
+            // 
+            this.label_COM_read.AutoSize = true;
+            this.label_COM_read.Location = new System.Drawing.Point(12, 270);
+            this.label_COM_read.Name = "label_COM_read";
+            this.label_COM_read.Size = new System.Drawing.Size(86, 13);
+            this.label_COM_read.TabIndex = 52;
+            this.label_COM_read.Text = "label_COM_read";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1884, 861);
+            this.Controls.Add(this.label_COM_read);
             this.Controls.Add(this.listBox_COM_read);
             this.Controls.Add(this.checkBox_scan_time);
             this.Controls.Add(this.checkBox6);
@@ -998,6 +1010,7 @@
         private System.Windows.Forms.CheckBox checkBox_scan_time;
         private System.Windows.Forms.ListBox listBox_COM_read;
         private System.IO.Ports.SerialPort serialPort_read_data;
+        private System.Windows.Forms.Label label_COM_read;
     }
 }
 
