@@ -242,7 +242,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
 
         private  void button_cicle_read_Click(object sender, EventArgs e)
         {
-            init_COM_port_MB();
+            init_COM_read();
             button_stop_read.Enabled = true;
             button_cicle_read.Enabled = false;
             if (serialPort_read_data.IsOpen == false)
@@ -250,8 +250,8 @@ namespace Read_Modbus_UsbCDC_stm32G4
             byte[] cmd_read_1 = { 7, 4, 0, 64, 0, 0 }; // для совместимости
             if(checkBox_ON_scan.Checked)
                 { _ = Read_cicle_scan_freq(cmd_read_1);}
- //           if (checkBox_scan_time.Checked)
- //               { _ = Read_cicle_scan_time(cmd_read_1); }
+            if (checkBox_scan_time.Checked)
+                {  Read_cicle_scan_time(); }
         }
 
         private void button_Save_Click(object sender, EventArgs e)
@@ -305,6 +305,45 @@ namespace Read_Modbus_UsbCDC_stm32G4
         {
             otrisovka_graf_listbox(data_freq[0].Fmin, data_freq[0].Fmax); 
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 4; i++) // i - номер графика = i-1
+            {
+                for (int t = 0; t < 1024; t++)
+                {
+                    chart1.Series[i].Points.AddXY(t, data_time.pin_Data_1000[t].y_float[i] ); // там происходит каша, зато наглядно - прием идет
+                    listbox_arr_data_graf[i].Items[t] = t.ToString("D4") + "= " + data_time.pin_Data_1000[t].y_float[i].ToString() + Environment.NewLine;
+
+                    //temp_data.val[i] = BitConverter.ToSingle(array_read, 7 + 4 * (2 * i + 1));
+                    //arr_data_time[i, t + 1] = temp_data.val[i];
+                    //Invoke(new Action(() => chart1.Series[i].Points.AddXY(t + 1, temp_data.val[i]))); // там происходит каша, зато наглядно - прием идет
+                    //Invoke(new Action(() => listbox_arr_data_graf[i].Items[t + 1] = (t + 1).ToString("D4") + "= " + temp_data.val[i].ToString() + Environment.NewLine));
+                }
+            }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if ((checkBox_scan_time.Checked) & (button_cicle_read.Enabled == false))
+            {
+                for (int ser_i = 0; ser_i < 18; ser_i++)
+                { chart1.Series[ser_i].Points.Clear(); }
+
+                for (int i = 0; i < 4; i++) // i - номер графика = i-1
+                {
+                    for (int t = 0; t < 1024; t++)
+                    {
+                        chart1.Series[i].Points.AddXY(t, data_time.pin_Data_1000[t].y_float[i]); // там происходит каша, зато наглядно - прием идет
+                        listbox_arr_data_graf[i].Items[t] = t.ToString("D4") + "= " + data_time.pin_Data_1000[t].y_float[i].ToString() + Environment.NewLine;
+
+                        chart1.Series[i + 12].Points.AddXY(t, data_time.pin_Data_1000[t].y_float_old[i]); // там происходит каша, зато наглядно - прием идет
+                    }
+                }
+
+            }
+        }
+
 
 
 

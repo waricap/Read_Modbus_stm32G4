@@ -137,6 +137,7 @@ namespace Read_Modbus_UsbCDC_stm32G4
             else
             { serialPort_read_data.BaudRate = Convert.ToInt32(listBox_BaudRate.Text); }
 
+            serialPort_read_data.ReadBufferSize = 4096;
             serialPort_read_data.DataBits = 8;
             serialPort_read_data.ReadTimeout = 1000;
             serialPort_read_data.WriteTimeout = 500;

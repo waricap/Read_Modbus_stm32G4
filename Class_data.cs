@@ -41,6 +41,98 @@ namespace Read_Modbus_UsbCDC_stm32G4
             CheckBox checkBox_phase = new CheckBox();
         }
     }
+
+    class Class_data_read_time
+    {
+        public struct pin_data_struct
+        {
+            public float[] y_float ;
+            public float[] y_float_old;
+            public int width;
+        }
+
+        public pin_data_struct[] pin_Data_1000 = new pin_data_struct[1024];
+
+        public Class_data_read_time()
+        {
+            for(int i = 0; i < 1024; i++)
+            { 
+                pin_Data_1000[i].y_float = new float[12];
+                pin_Data_1000[i].y_float_old = new float[12];
+            }
+        }
+
+        public int start_index_paket;
+        public int end_index_paket;
+        public int count_index_paket;
+        private int t;
+        private int t_old =1025;
+        public void Decode_string_to_data(byte[] data, int len) // data == входной считаный массив
+        {
+            int start_index_paket ;
+            if (len > 84)
+            {
+                count_index_paket = len / 85;
+                for (int n=0; n< count_index_paket; n++)
+                {
+                    for(int i=0; i<82; i++ )
+                    {
+                        int n85i = n * 85 + i;
+                        // (array_read[0] == 7)     // adr_slave) // адрес устройства, которое отвечает
+                        // (array_read[1] == 4)     // num_cmd) // код команды, от устройства, как там понято
+                        // (array_read[2] == 80)    // в этом байте длина пакета данных
+                        if ((data[n85i] == 7) & (data[n85i + 1] == 4) & (data[n85i + 2] == 80)) // нашли начало пакета, раскидать надо
+                        {
+                            // пакет 80 байт словили, теперь проверка CRC // пакет 80 байт словили, теперь проверка CRC // пакет 80 байт словили, теперь проверка CRC
+                            byte[] data_temp_crc = new byte[83];
+                            for (int m = 0; m < 83; m++)
+                                { data_temp_crc[m] = data[n85i + m]; }
+                            byte[] data_CRC = Modbus.Utility.ModbusUtility.CalculateCrc(data_temp_crc);
+                            byte crc_0 = data[n85i + 83];
+                            byte crc_1 = data[n85i + 84];
+
+                            if ((data_CRC[0] == crc_0) & (data_CRC[1] == crc_1)) // CRC совпал - удача
+                            {
+                                t = (int)(BitConverter.ToSingle(data_temp_crc, 3)); // это есть индекс пришедшего пакета, по времени
+                                //if (t_old > t)  // значит пошел новый пакет, старый надо прорисовать тоненько
+                                //{
+                                //    for (int x = 0; x < 1024; x++)
+                                //    {
+                                //        for (int g = 0; g < 6; g++)
+                                //        { 
+                                //            pin_Data_1000[x].y_float_old[g] = pin_Data_1000[x].y_float[g];
+                                //            pin_Data_1000[x].y_float[g] = 0;
+                                //        }
+                                //    }
+                                //}
+                                t_old = t;
+
+                                pin_Data_1000[t + 0].y_float[0] = BitConverter.ToSingle(data_temp_crc, 7);
+                                pin_Data_1000[t + 1].y_float[0] = BitConverter.ToSingle(data_temp_crc, 11);
+                                pin_Data_1000[t + 2].y_float[0] = BitConverter.ToSingle(data_temp_crc, 15);
+                                pin_Data_1000[t + 0].y_float[1] = BitConverter.ToSingle(data_temp_crc, 19);
+                                pin_Data_1000[t + 1].y_float[1] = BitConverter.ToSingle(data_temp_crc, 23);
+                                pin_Data_1000[t + 2].y_float[1] = BitConverter.ToSingle(data_temp_crc, 27);
+                                pin_Data_1000[t + 0].y_float[2] = BitConverter.ToSingle(data_temp_crc, 31);
+                                pin_Data_1000[t + 1].y_float[2] = BitConverter.ToSingle(data_temp_crc, 35);
+                                pin_Data_1000[t + 2].y_float[2] = BitConverter.ToSingle(data_temp_crc, 39);
+                                pin_Data_1000[t + 0].y_float[3] = BitConverter.ToSingle(data_temp_crc, 43);
+                                pin_Data_1000[t + 1].y_float[3] = BitConverter.ToSingle(data_temp_crc, 47);
+                                pin_Data_1000[t + 2].y_float[3] = BitConverter.ToSingle(data_temp_crc, 51);
+                                pin_Data_1000[t + 0].y_float[4] = BitConverter.ToSingle(data_temp_crc, 55);
+                                pin_Data_1000[t + 1].y_float[4] = BitConverter.ToSingle(data_temp_crc, 59);
+                                pin_Data_1000[t + 2].y_float[4] = BitConverter.ToSingle(data_temp_crc, 63);
+                                pin_Data_1000[t + 0].y_float[5] = BitConverter.ToSingle(data_temp_crc, 67);
+                                pin_Data_1000[t + 1].y_float[5] = BitConverter.ToSingle(data_temp_crc, 71);
+                                pin_Data_1000[t + 2].y_float[5] = BitConverter.ToSingle(data_temp_crc, 75);
+                                i +=  84; // весь обработаный пакет, если все совпало, прокинуть и перейти к следующему
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     class Class_data :  IComparable  
     {
         public UInt16 Fmin = 14500; // минимальная частота,  freq - не должен выходить за эти пределы
